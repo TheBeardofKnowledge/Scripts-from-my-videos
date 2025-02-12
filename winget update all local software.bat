@@ -6,26 +6,16 @@ ECHO.
 ECHO =============================
 ECHO Running Admin shell
 ECHO =============================
- 
-:checkPrivileges 
-NET FILE 1>NUL 2>NUL
-if '%errorlevel%' == '0' ( goto gotPrivileges ) else ( goto getPrivileges ) 
- 
-:getPrivileges 
-if '%1'=='ELEV' (shift & goto gotPrivileges)  
-ECHO. 
-ECHO **************************************
-ECHO Invoking UAC for Privilege Escalation 
-ECHO **************************************
- 
-setlocal DisableDelayedExpansion
-set "batchPath=%~0"
-setlocal EnableDelayedExpansion
-ECHO Set UAC = CreateObject^("Shell.Application"^) > "%temp%\OEgetPrivileges.vbs" 
-ECHO UAC.ShellExecute "!batchPath!", "ELEV", "", "runas", 1 >> "%temp%\OEgetPrivileges.vbs" 
-"%temp%\OEgetPrivileges.vbs" 
-exit /B 
- 
+::batch file elevation notes
+::method 1 - using powershell
+@echo off
+:: Check for elevation
+net session >nul 2>&1
+if %errorlevel% neq 0 (
+    :: Not elevated, so re-run with elevation
+    powershell -Command "Start-Process cmd -ArgumentList '/c %~s0 %*' -Verb RunAs"
+    exit /b
+)
 :gotPrivileges 
 ::::::::::::::::::::::::::::
 :START
