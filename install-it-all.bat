@@ -1,5 +1,6 @@
 @ECHO OFF
-
+::To use this script, simply drop it into a folder containing drivers you want to install silently, and one at a time, from that folder and any subfolders. Must be run locally, no mapped drives.
+::I use this script to update all the drivers and firmware on a Dell workstation in bulk using predownloaded files instead of using Dell command Update.
 :::::::::::::::::::::::::::::::::::::::::
 :: Automatically check & get admin rights
 :::::::::::::::::::::::::::::::::::::::::
@@ -32,7 +33,7 @@ ECHO ===========================================================================
 
 :: The following command executes all files in folders and subfolders silently, one at a time and in order
 	FOR /r "." %%a in (*.exe) do "%%~fa" -s
-
+::If your installers dont support -s, check what they do install by running them with /? and then change the -s switch up above to what is supported.
 	ECHO Complete. 
 	ECHO Remember to reboot if needed
 	ECHO Monitor Task Manager Processes to ensure installations complete
