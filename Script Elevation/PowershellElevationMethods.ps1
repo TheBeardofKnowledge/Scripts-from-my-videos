@@ -8,8 +8,6 @@ if (!([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]:
 # Your script here
 
 
-
-
 EXTRAS FOR TESTING
 #=======================================================================================================================
 #for Batch file powershell calling with elevation:
