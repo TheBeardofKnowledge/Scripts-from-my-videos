@@ -1,6 +1,7 @@
-:::::::::::::::::::::::::::::::::::::::::
-:: Automatically check & get admin rights
-:::::::::::::::::::::::::::::::::::::::::
+:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+:: This Script Needs Admin Rights to properly fix the issue
+::Automatically check & get admin rights
+::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 @ECHO OFF
 color f0
 ECHO =============================
@@ -55,10 +56,14 @@ echo Flushing Cached GPO data on local workstation
 
 ::WMIcorruptionfix
 echo Checking / Repairing Windows Management Instrumentation
+	sc config winmgmt start= disabled
+	net stop winmgmt /y
 	cd C:\Windows\System32\Wbem
 	for /f %%s in ('dir /b *.mof *.mfl') do mofcomp %%s
 	for %%i in (*.dll) do regSvr32 -s %%i)
-	net stop winmgmt /y
+	Winmgmt /salvagerepository %windir%\System32\wbem
+	Winmgmt /resetrepository %windir%\System32\wbem
+	sc config winmgmt start= auto
 	net start winmgmt
 
 	echo "Updating Group policy"
@@ -75,4 +80,5 @@ shutdown -r -t 0
 
 :END
 exit
+
 
