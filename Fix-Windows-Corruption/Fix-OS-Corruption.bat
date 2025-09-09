@@ -41,11 +41,11 @@ ECHO Reset Base Image
 	Dism.exe /online /Cleanup-Image /StartComponentCleanup /ResetBase
 ECHO Repairing Windows Management Instrumentation 
 ECHO Checking / Repairing Windows Management Instrumentation
-	sc config winmgmt start= disabled
 	net stop winmgmt /y
 	cd C:\Windows\System32\Wbem
 	for /f %%s in ('dir /b *.mof *.mfl') do mofcomp %%s
 	for %%i in (*.dll) do regSvr32 -s %%i)
+	sc config winmgmt start= disabled
 	Winmgmt /salvagerepository %windir%\System32\wbem
 	Winmgmt /resetrepository %windir%\System32\wbem
 	sc config winmgmt start= auto
@@ -63,3 +63,4 @@ PowerShell -ExecutionPolicy Unrestricted -c "Get-AppxPackage Microsoft.Windows.S
 ::end of script
 ECHO Service is complete, please restart the pc for the changes to take effect.
 PAUSE
+
