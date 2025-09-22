@@ -14,7 +14,6 @@ ECHO =============================
 :: Not elevated, so re-run with elevation
     	powershell -Command "Start-Process cmd -ArgumentList '/c %~s0 %*' -Verb RunAs"
     	exit /b
-	)
 :gotPrivileges 
 ::::::::::::::::::::::::::::
 :STARTINTRO
@@ -73,12 +72,12 @@ color
 	net stop wuauserv >nul 2>&1
 	net stop appidsvc >nul 2>&1
 	net stop cryptsvc >nul 2>&1
-	DEL /S /Q /F “%ALLUSERSPROFILE%\Application Data\Microsoft\Network\Downloader\”	>nul 2>&1
+	DEL /S /Q /F "%ALLUSERSPROFILE%\Application Data\Microsoft\Network\Downloader\"	>nul 2>&1
 	rmdir /S /Q "%systemroot%\SoftwareDistribution" >nul 2>&1
 	rmdir /S /Q "%systemroot%\system32\catroot2" >nul 2>&1
 ::commented out the below line because rolling back updates is needed, and it's usually only 1-2Gb.  If you don't care about rolling back updates (DANGER Will Robinson), remove the :: in front of the next line.	
 	::rmdir /S /Q "%systemroot%\Installer\$PatchCache$"
-	DEL /S /Q /F "systemroot%\ServiceProfiles\NetworkService\AppData\Local\Microsoft\Windows\DeliveryOptimization\Logs\*.*" >nul 2>&1
+	DEL /S /Q /F "%systemroot%\ServiceProfiles\NetworkService\AppData\Local\Microsoft\Windows\DeliveryOptimization\Logs\*.*" >nul 2>&1
 	echo STARTING WINDOWS UPDATE SERVICES AFTER CLEANUP
 	net start bits >nul 2>&1
 	net start wuauserv >nul 2>&1
@@ -205,7 +204,7 @@ ECHO iOS device Backups cleanup
 		)
 		del /q /s /f "!chromeDataDir!\component_crx_cache\"	>nul 2>&1
 		del /q /s /f "!chromeDataDir!\GrShaderCache\"	>nul 2>&1
-		del /q /s /f "!chromeDataDir!\ShaderChache\"	>nul 2>&1
+		del /q /s /f "!chromeDataDir!\ShaderCache\"	>nul 2>&1
 
 		REM Clean up the temporary file after each profile is processed
     	IF EXIST "!folderListFile!" DEL /Q /F "!folderListFile!"
@@ -378,18 +377,18 @@ ECHO Be patient, this process can take a while depending on how much temporary C
 	IF exist "%systemDrive%\Windows.old" (
 	takeown /F "%systemDrive%\Windows.old" /A /R /D Y >nul 2>&1
 	icacls "%systemdrive%\Windows.old" /grant *S-1-5-32-544:F /T /C /Q >nul 2>&1
-	RD /s /q %systemdrive%\$Windows.old >nul 2>&1
+	RD /s /q %systemdrive%\Windows.old >nul 2>&1
 	) else goto windowsbt
 :Windowsbt
 ::$Windows.~BT hidden folder
 	IF exist "%systemDrive%\$Windows.~BT" (
 	takeown /F "%systemDrive%\$Windows.~BT" /A /R /D Y >nul 2>&1
 	icacls %systemdrive%\$Windows.~BT\*.* /T /grant administrators:F >nul 2>&1
-	RD /s /q %systemDrive%\$Windows.`BT >nul 2>&1
+	RD /s /q %systemDrive%\$Windows.~BT >nul 2>&1
 	) else goto Windowsws
 :Windowsws
 ::$Windows.~WS hidden folder
-IF exist "%systemdrive%\Windows.~WS" (
+IF exist "%systemdrive%\$Windows.~WS" (
 	takeown /F "%systemDrive%\$Windows.~WS" /A /R /D Y >nul 2>&1
 	icacls %systemdrive%\$Windows.~WS\*.* /T /grant administrators:F >nul 2>&1
 	RD /s /q %systemDrive%\$Windows.~WS >nul 2>&1
