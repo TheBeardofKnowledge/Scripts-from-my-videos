@@ -42,18 +42,13 @@ color
 	ECHO 	Thank You to all that have given helpful feedback for improvements!
 	ECHO 	Credit...RayneDance.. https://github.com/RayneDance For improving ::chrome/edge profile handling...ThankYou!
 	ECHO 	Credit...WebFoundUs..https://tiktok.com/webb_found_us For the Name "Beard Sweeper"
-	ECHO Version 04-22-2025 mm/dd/yyyy
+	ECHO Version 09-22-2025 mm/dd/yyyy
 :StartofScript
 	echo ********************************************
 	ECHO 	Your Current free space of hard drive:
 		fsutil volume diskfree c:
 	echo ********************************************
 	TIMEOUT 10
-
-:OutdatedHibernateFile
-	ECHO disabling hibernation and deleting the hibernation file
-	ECHO This also disables the Windows Fast Startup and forever "Up Time"
-		powercfg -h off	>nul 2>&1
 
 :hibernation
 ::	Reasons to leave Hibernation/Fast Startup/Hybrid Shutdown disabled on desktops...
@@ -437,4 +432,5 @@ echo ********************************************
 ECHO All cleaned up, have a nice day!
 
 	PAUSE
+
 
