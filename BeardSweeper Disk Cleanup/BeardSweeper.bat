@@ -55,6 +55,38 @@ color
 	ECHO This also disables the Windows Fast Startup and forever "Up Time"
 		powercfg -h off	>nul 2>&1
 
+:hibernation
+::	Reasons to leave Hibernation/Fast Startup/Hybrid Shutdown disabled on desktops...
+::	1. Most modern PC's come with an SSD or m.2 drive and fast startup is not required.
+::	2. Hybrid shutdown/hibernation/fast startup often causes Windows Updates to NOT install properly.
+::	3. "system up time" timer in task manager keeps running with this enabled.
+::	.
+::	1 Reason to enable on a laptop:
+::	Only good thing from Hibernate/Fast Startup is if your Laptop/Tablet battery dies while in sleep/standby mode...
+::	your open files are saved because the laptop will wake, save data in ram to hibernation file, then shutdown.
+	SetLocal EnableExtensions
+:detectchassis
+	Set "Type=" & For /F EOL^=- %%G In ('
+	 %SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe -NoProfile -Command
+	 "(Get-CimInstance -Query 'Select * From CIM_Chassis').ChassisTypes"^
+	 " | Select-Object -Property @{ Label = '-'; Expression = { Switch ($_) {"^
+ 	" { '3', '4', '5', '6', '7', '13', '15', '16', '24' -Eq $_ } { 'Desktop' };"^
+ 	" { '8', '9', '10', '11', '12', '14', '18', '21', '30', '31', '32' -Eq $_ } { 'Laptop' };"^
+	 " default { '' } } } }" 2^>NUL') Do Set Type=%%G
+	If Not Defined Type GoTo END
+	Set Type
+		if /i "%Type%"=="Laptop" goto laptop
+		if /i "%Type%"=="Desktop" goto desktop
+:laptop
+	ECHO Laptop detected - enabling hibernation mode
+	powercfg -h on
+	goto NEXT
+:desktop
+	ECHO Desktop detected - disabling hibernation mode
+	powercfg -h off
+	goto NEXT
+:NEXT	
+
 :BadPrintJobs
 	ECHO Deleting unreleased erroneous print jobs
 	NET STOP /Y Spooler >nul 2>&1
@@ -235,7 +267,7 @@ ECHO Cleaning Edge -Chromium- Cache
 		)
 		del /q /s /f "!edgeDataDir!\component_crx_cache\"	>nul 2>&1
 		del /q /s /f "!edgeDataDir!\GrShaderCache\"	>nul 2>&1
-		del /q /s /f "!edgeDataDir!\ShaderChache\"	>nul 2>&1
+		del /q /s /f "!edgeDataDir!\ShaderCache\"	>nul 2>&1
 
 		REM Clean up the temporary file after each profile is processed
     	IF EXIST "!folderListFile!" DEL /Q /F "!folderListFile!"
@@ -396,37 +428,6 @@ IF exist "%systemdrive%\$Windows.~WS" (
 	ECHO No previous windows version folders found
 	)
 
-:hibernation
-::	Reasons to leave Hibernation/Fast Startup/Hybrid Shutdown disabled on desktops...
-::	1. Most modern PC's come with an SSD or m.2 drive and fast startup is not required.
-::	2. Hybrid shutdown/hibernation/fast startup often causes Windows Updates to NOT install properly.
-::	3. "system up time" timer in task manager keeps running with this enabled.
-::	.
-::	1 Reason to enable on a laptop:
-::	Only good thing from Hibernate/Fast Startup is if your Laptop/Tablet battery dies while in sleep/standby mode...
-::	your open files are saved because the laptop will wake, save data in ram to hibernation file, then shutdown.
-	SetLocal EnableExtensions
-:detectchassis
-	Set "Type=" & For /F EOL^=- %%G In ('
-	 %SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe -NoProfile -Command
-	 "(Get-CimInstance -Query 'Select * From CIM_Chassis').ChassisTypes"^
-	 " | Select-Object -Property @{ Label = '-'; Expression = { Switch ($_) {"^
- 	" { '3', '4', '5', '6', '7', '13', '15', '16', '24' -Eq $_ } { 'Desktop' };"^
- 	" { '8', '9', '10', '11', '12', '14', '18', '21', '30', '31', '32' -Eq $_ } { 'Laptop' };"^
-	 " default { '' } } } }" 2^>NUL') Do Set Type=%%G
-	If Not Defined Type GoTo END
-	Set Type
-		if /i "%Type%"=="Laptop" goto laptop
-		if /i "%Type%"=="Desktop" goto desktop
-:laptop
-	ECHO Laptop detected - enabling hibernation mode
-	powercfg -h on
-	goto END
-:desktop
-	ECHO Desktop detected - disabling hibernation mode
-	powercfg -h off
-	goto END
-:END	
 echo ********************************************
 ECHO New free space of hard drive:
 	fsutil volume diskfree c:
@@ -436,3 +437,4 @@ echo ********************************************
 ECHO All cleaned up, have a nice day!
 
 	PAUSE
+
