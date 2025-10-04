@@ -39,21 +39,44 @@ ECHO Cleaning Image Components
 	Dism.exe /online /Cleanup-Image /StartComponentCleanup
 ECHO Reset Base Image
 	Dism.exe /online /Cleanup-Image /StartComponentCleanup /ResetBase
-ECHO Repairing Windows Management Instrumentation 
-ECHO Checking / Repairing Windows Management Instrumentation
-	net stop winmgmt /y
-	cd C:\Windows\System32\Wbem
-	for /f %%s in ('dir /b *.mof *.mfl') do mofcomp %%s
-	for %%i in (*.dll) do regSvr32 -s %%i)
+ 
+::WMIcorruptionfix
+ECHO Repairing Windows Management Instrumentation
+
+echo This is an aggressive repair. It will stop the WMI service,
+echo re-register all WMI-related DLLs, and recompile all standard
+echo MOF files in the WBEM directory except uninstallers.
+echo Disabling and stopping the WMI service...
 	sc config winmgmt start= disabled
-	Winmgmt /salvagerepository %windir%\System32\wbem
-	Winmgmt /resetrepository %windir%\System32\wbem
+	net stop winmgmt /y
+
+echo registering all provider DLLs
+	cd /d %windir%\system32\wbem
+	for /f %%s in ('dir /b *.dll') do (
+	    echo Registering %%s...
+	    regsvr32 /s %%s
+	)
+echo DLL registration complete.
+
+echo Recompiling MOF and MFL files (excluding uninstallers)...
+:: This command creates a list of MOF/MFL files, filters out any
+:: containing "uninstall", and then compiles the files from that list.
+	dir /b *.mof *.mfl | findstr /v /i "uninstall" > moflist.txt
+	for /f %%s in (moflist.txt) do (
+	    echo Compiling %%s...
+	    mofcomp %%s
+	)
+	del moflist.txt
+echo MOF compilation complete.
+
+echo Re-enabling and starting the WMI service...
 	sc config winmgmt start= auto
 	net start winmgmt
+
 ::Powershell
 ECHO Registering AppXPackages to Fix Windows APP and Store Problems
 ::Powershell
-::Fix Windows Store
+::Fix Windows Store Apps
 PowerShell -ExecutionPolicy Unrestricted -C "& {Add-AppxPackage -DisableDevelopmentMode -Register ((Get-AppxPackage *Microsoft.WindowsStore*).InstallLocation + '\AppxManifest.xml')}"
 
 PowerShell -ExecutionPolicy Unrestricted -c "Get-AppXPackage | Foreach {Add-AppxPackage -DisableDevelopmentMode -Register "$($_. InstallLocation + '\appxmanifest.xml')}"
@@ -61,6 +84,8 @@ PowerShell -ExecutionPolicy Unrestricted -c "Get-AppXPackage | Foreach {Add-Appx
 PowerShell -ExecutionPolicy Unrestricted -c "Get-AppxPackage Microsoft.Windows.ShellExperienceHost | foreach {Add-AppxPackage -register "$($_. InstallLocation + '\appxmanifest.xml') -DisableDevelopmentMode}"
 
 ::end of script
+exit
 ECHO Service is complete, please restart the pc for the changes to take effect.
 PAUSE
+
 
