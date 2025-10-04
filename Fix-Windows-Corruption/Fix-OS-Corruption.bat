@@ -86,7 +86,17 @@ PowerShell -ExecutionPolicy Unrestricted -c "Get-AppxPackage Microsoft.Windows.S
 ::end of script
 exit
 ECHO Service is complete, please restart the pc for the changes to take effect.
-PAUSE
+echo ?
+set /P c=A reboot might be required to complete the settings, do you wish to reboot now[Y/N]?
+if /I "%c%" EQU "Y" goto :REBOOT
+if /I "%c%" EQU "N" goto :END
+
+:REBOOT
+shutdown -r -t 0
+
+:END
+exit
+
 
 
 
