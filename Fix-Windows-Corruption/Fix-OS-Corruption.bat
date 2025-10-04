@@ -61,12 +61,12 @@ echo DLL registration complete.
 echo Recompiling MOF and MFL files (excluding uninstallers)...
 :: This command creates a list of MOF/MFL files, filters out any
 :: containing "uninstall", and then compiles the files from that list.
-	dir /b *.mof *.mfl | findstr /v /i "uninstall" > moflist.txt
-	for /f %%s in (moflist.txt) do (
+	dir /b *.mof *.mfl | findstr /v /i "uninstall" > exclude.txt
+	for /f %%s in (exclude.txt) do (
 	    echo Compiling %%s...
 	    mofcomp %%s
 	)
-	del moflist.txt
+	del exclude.txt
 echo MOF compilation complete.
 
 echo Re-enabling and starting the WMI service...
@@ -87,5 +87,6 @@ PowerShell -ExecutionPolicy Unrestricted -c "Get-AppxPackage Microsoft.Windows.S
 exit
 ECHO Service is complete, please restart the pc for the changes to take effect.
 PAUSE
+
 
 
