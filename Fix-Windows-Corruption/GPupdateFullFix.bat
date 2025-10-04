@@ -55,14 +55,35 @@ echo Flushing Cached GPO data on local workstation
 	RD /S /Q "c:\windows\syswow64\grouppolicyusers"
 
 ::WMIcorruptionfix
-echo Checking / Repairing Windows Management Instrumentation
-	net stop winmgmt /y
-	cd C:\Windows\System32\Wbem
-	for /f %%s in ('dir /b *.mof *.mfl') do mofcomp %%s
-	for %%i in (*.dll) do regSvr32 -s %%i)
+ECHO Repairing Windows Management Instrumentation
+
+echo This is an aggressive repair. It will stop the WMI service,
+echo re-register all WMI-related DLLs, and recompile all standard
+echo MOF files in the WBEM directory except uninstallers.
+echo Disabling and stopping the WMI service...
 	sc config winmgmt start= disabled
-	Winmgmt /salvagerepository %windir%\System32\wbem
-	Winmgmt /resetrepository %windir%\System32\wbem
+	net stop winmgmt /y
+
+echo registering all provider DLLs
+	cd /d %windir%\system32\wbem
+	for /f %%s in ('dir /b *.dll') do (
+	    echo Registering %%s...
+	    regsvr32 /s %%s
+	)
+echo DLL registration complete.
+
+echo Recompiling MOF and MFL files (excluding uninstallers)...
+:: This command creates a list of MOF/MFL files, filters out any
+:: containing "uninstall", and then compiles the files from that list.
+	dir /b *.mof *.mfl | findstr /v /i "uninstall" > exclude.txt
+	for /f %%s in (exclude.txt) do (
+	    echo Compiling %%s...
+	    mofcomp %%s
+	)
+	del exclude.txt
+echo MOF compilation complete.
+
+echo Re-enabling and starting the WMI service...
 	sc config winmgmt start= auto
 	net start winmgmt
 
@@ -80,6 +101,7 @@ shutdown -r -t 0
 
 :END
 exit
+
 
 
 
