@@ -42,6 +42,7 @@ color
 	ECHO 	Thank You to all that have given helpful feedback for improvements!
 	ECHO 	Credit...RayneDance.. https://github.com/RayneDance For improving ::chrome/edge profile handling...ThankYou!
 	ECHO 	Credit...WebFoundUs..https://tiktok.com/webb_found_us For the Name "Beard Sweeper"
+	ECHO	Credit...tristanghanks..https://github.com/tristanghanks for catching and fixing all typo errors!
 	ECHO Version 09-22-2025 mm/dd/yyyy
 :StartofScript
 	echo ********************************************
@@ -432,5 +433,6 @@ echo ********************************************
 ECHO All cleaned up, have a nice day!
 
 	PAUSE
+
 
 
