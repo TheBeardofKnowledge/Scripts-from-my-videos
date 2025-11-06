@@ -425,7 +425,7 @@ IF exist "%systemdrive%\$Windows.~WS" (
 	) else (
 	ECHO No previous windows version folders found
 	)
-
+:END
 echo ********************************************
 ECHO New free space of hard drive:
 	powershell -command "(fsutil volume diskfree c:)[0]"
@@ -435,4 +435,5 @@ echo ********************************************
 ECHO All cleaned up, have a nice day!
 
 	PAUSE
+
 
