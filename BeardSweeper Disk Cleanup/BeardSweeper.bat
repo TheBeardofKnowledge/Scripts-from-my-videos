@@ -23,15 +23,15 @@ ECHO =============================
 color
 	TITLE Welcome to Beard Sweeper! TBOK disk cleanup script!
 	ECHO Beard Sweeper, TBOK automagic disk cleanup script!
-	ECHO 	.*********...*****.......****.....*....*.
-	ECHO 	.....*.......*....*.....*....*....*...*..
-	ECHO 	.....*.......*.....*...*......*...*..*...
-	ECHO 	.....*.......*....*....*......*...*.*....
-	ECHO 	.....*.......*..*......*......*...**.....
-	ECHO 	.....*.......*....*....*......*...*.*....
-	ECHO 	.....*.......*.....*...*......*...*..*...
-	ECHO 	.....*.......*....*.....*....*....*...*..
-	ECHO 	.....*.......*****.......****.....*....*.
+	ECHO 	.TTTTTTTTT...BBBBB.......OOOO.....K....K.
+	ECHO 	.....T.......B....B.....O....O....K...K..
+	ECHO 	.....T.......B.....B...O......O...K..K...
+	ECHO 	.....T.......B....B....O......O...K.K....
+	ECHO 	.....T.......B..B......O......O...KK.....
+	ECHO 	.....T.......B....B....O......O...K.K....
+	ECHO 	.....T.......B.....B...O......O...K..K...
+	ECHO 	.....T.......B....B.....O....O....K...K..
+	ECHO 	.....T.......BBBBB.......OOOO.....K....K.
 	ECHO Community effort can be tracked at https://github.com/TheBeardofKnowledge/Scripts-from-my-videos
 	ECHO	Purpose of this batch file is to recover as much "safe" free space from your windows system drive
 	ECHO	in order to gain back free space that Windows, other programs, and users themselves have consumed.
@@ -43,17 +43,18 @@ color
 	ECHO 	Credit...RayneDance.. https://github.com/RayneDance For improving ::chrome/edge profile handling...ThankYou!
 	ECHO 	Credit...WebFoundUs..https://tiktok.com/webb_found_us For the Name "Beard Sweeper"
 	ECHO	Credit...tristanghanks..https://github.com/tristanghanks for catching and fixing all typo errors!
-	ECHO Version 09-22-2025 mm/dd/yyyy
+	ECHO Version 11-05-2025 mm/dd/yyyy
 :StartofScript
 	echo ********************************************
 	ECHO 	Your Current free space of hard drive:
-		fsutil volume diskfree c:
+		powershell -command "(fsutil volume diskfree c:)[0]"
 	echo ********************************************
 	TIMEOUT 10
 
 :hibernation
+ECHO Setting Hibernation based on PC chassis type
 ::	Reasons to leave Hibernation/Fast Startup/Hybrid Shutdown disabled on desktops...
-::	1. Most modern PC's come with an SSD or m.2 drive and fast startup is not required.
+::	1. Most modern PC's come with an SSD or m.2 NVME drive and fast startup is not required.
 ::	2. Hybrid shutdown/hibernation/fast startup often causes Windows Updates to NOT install properly.
 ::	3. "system up time" timer in task manager keeps running with this enabled.
 ::	.
@@ -91,7 +92,7 @@ color
 	
 :fontcache
 	Net stop fontcache >nul 2>&1
-	DEL /S /Q /F %systemdrive%\Windows\ServiceProfiles\LocalService\AppData\Local\*.* /s /q >nul 2>&1
+	DEL /S /Q /F %systemdrive%\Windows\ServiceProfiles\LocalService\AppData\Local\*.* >nul 2>&1
 	NET start fontcache	>nul 2>&1
 
 :WindowsUpdatesCleanup
@@ -113,8 +114,7 @@ color
 	net start cryptsvc >nul 2>&1
 
 :WindowsTempFilesCleanup
-	ECHO Deleting all System temporary files, this may take a while...
-	@ECHO OFF
+	ECHO Deleting all System temporary files
 	DEL /S /Q /F "%TMP%\" >nul 2>&1	
 	DEL /S /Q /F "%TEMP%\" >nul 2>&1
 	DEL /S /Q /F "%WINDIR%\Temp\" >nul 2>&1
@@ -157,9 +157,11 @@ color
 	RD /S /Q "%%u\AppData\roaming\Apple Computer\iTunes\iPod Software Updates"	>nul 2>&1
 	)
 ECHO iOS device Backups cleanup
-	set /p a=Do you wish to also delete any existing mobile phone iTunes device backups? [Y/N]?
-	if /I "%a%" EQU "Y" goto iOSbackups
-	if /I "%a%" EQU "N" goto FreakenMicrosoftTeams
+	set /p a=Do you wish to also delete any existing mobile phone iTunes device backups? [Y/N] Default is Y
+	CHOICE /C YN /N /T 10 /D Y
+
+	IF ERRORLEVEL 2 GOTO FreakenMicrosoftTeams
+	IF ERRORLEVEL 1 GOTO iOSbackups
 :iOSbackups
 	For /d %%u in (c:\users\*) do (
 	RD /S /Q "%%u\AppData\roaming\Apple Computer\MobileSync\Backup"	>nul 2>&1
@@ -222,18 +224,17 @@ ECHO iOS device Backups cleanup
 
 	IF EXIST "!folderListFile!" (
 	FOR /F "usebackq tokens=*" %%B IN ("!folderListFile!") DO (
-		del /q /s /f "!chromeDataDir!\%%B\Cache\cache_data\"	>nul 2>&1
-		del /q /s /f "!chromeDataDir!\%%B\Code Cache\js\"	>nul 2>&1
-		del /q /s /f "!chromeDataDir!\%%B\Code Cache\wasm\"	>nul 2>&1
-		del /q /s /f "!chromeDataDir!\%%B\Service Worker\CacheStorage\"	>nul 2>&1
-		del /q /s /f "!chromeDataDir!\%%B\Service Worker\ScriptCache\"	>nul 2>&1
-		del /q /s /f "!chromeDataDir!\%%B\gpucache\"	>nul 2>&1
+		del /q /s /f "!chromeDataDir!\%%B\Cache\cache_data\*"	>nul 2>&1
+		del /q /s /f "!chromeDataDir!\%%B\Code Cache\js\*"	>nul 2>&1
+		del /q /s /f "!chromeDataDir!\%%B\Code Cache\wasm\*"	>nul 2>&1
+		del /q /s /f "!chromeDataDir!\%%B\Service Worker\CacheStorage\*"	>nul 2>&1
+		del /q /s /f "!chromeDataDir!\%%B\Service Worker\ScriptCache\*"	>nul 2>&1
+		del /q /s /f "!chromeDataDir!\%%B\gpucache\*"	>nul 2>&1
+		del /q /s /f "!chromeDataDir!\component_crx_cache\*"	>nul 2>&1
+		del /q /s /f "!chromeDataDir!\GrShaderCache\*"	>nul 2>&1
+		del /q /s /f "!chromeDataDir!\ShaderCache\*"	>nul 2>&1
 			)
 		)
-		del /q /s /f "!chromeDataDir!\component_crx_cache\"	>nul 2>&1
-		del /q /s /f "!chromeDataDir!\GrShaderCache\"	>nul 2>&1
-		del /q /s /f "!chromeDataDir!\ShaderCache\"	>nul 2>&1
-
 		REM Clean up the temporary file after each profile is processed
     	IF EXIST "!folderListFile!" DEL /Q /F "!folderListFile!"
 	)
@@ -259,12 +260,11 @@ ECHO Cleaning Edge -Chromium- Cache
 		del /q /s /f "!edgeDataDir!\%%B\Service Worker\CacheStorage\"	>nul 2>&1
 		del /q /s /f "!edgeDataDir!\%%B\Service Worker\ScriptCache\"	>nul 2>&1
 		del /q /s /f "!edgeDataDir!\%%B\gpucache\"	>nul 2>&1
-			)
-		)
 		del /q /s /f "!edgeDataDir!\component_crx_cache\"	>nul 2>&1
 		del /q /s /f "!edgeDataDir!\GrShaderCache\"	>nul 2>&1
 		del /q /s /f "!edgeDataDir!\ShaderCache\"	>nul 2>&1
-
+			)
+		)
 		REM Clean up the temporary file after each profile is processed
     	IF EXIST "!folderListFile!" DEL /Q /F "!folderListFile!"
 	)
@@ -381,7 +381,7 @@ ECHO DiskCleanup registry settings completed
 ECHO Running CleanMgr and Waiting for Disk Cleanup to complete, this takes a while - do not close this window!
 	START /wait CLEANMGR /sagerun:69 >nul 2>&1
 ECHO Be patient, this process can take a while depending on how much temporary Crap has accummulated in your system...
-	START /wait CLEANMGR /verylowdisk /autoclean	>nul 2>&1
+	START CLEANMGR /verylowdisk /autoclean	>nul 2>&1
 
 
 :RestorePointsCleaup
@@ -426,13 +426,10 @@ IF exist "%systemdrive%\$Windows.~WS" (
 
 echo ********************************************
 ECHO New free space of hard drive:
-	fsutil volume diskfree c:
+	powershell -command "(fsutil volume diskfree c:)[0]"
 echo ********************************************
 
 	color 0A
 ECHO All cleaned up, have a nice day!
 
 	PAUSE
-
-
-
