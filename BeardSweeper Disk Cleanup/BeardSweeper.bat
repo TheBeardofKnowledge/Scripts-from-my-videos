@@ -396,7 +396,7 @@ ECHO Be patient, this process can take a while depending on how much temporary C
 IF ERRORLEVEL 2 GOTO end
 IF ERRORLEVEL 1 GOTO removeRestorePoints
 :removeRestorePoints
-	vssadmin delete shadows /all >nul 2>&1
+	::vssadmin delete shadows /all >nul 2>&1
 ::The next line can be enabled by removing the "::" if you want the system to create a new restore point.
 ::wmic.exe /Namespace:\\root\default Path SystemRestore Call CreateRestorePoint "AfterDiskCleanup", 100, 7 >nul 2>&1
 
@@ -435,5 +435,6 @@ echo ********************************************
 ECHO All cleaned up, have a nice day!
 
 	PAUSE
+
 
 
