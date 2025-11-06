@@ -254,15 +254,15 @@ ECHO Cleaning Edge -Chromium- Cache
 
 	IF EXIST "!folderListFile!" (
 	FOR /F "usebackq tokens=*" %%B IN ("!folderListFile!") DO (
-		del /q /s /f "!edgeDataDir!\%%B\Cache\cache_data\"	>nul 2>&1
-		del /q /s /f "!edgeDataDir!\%%B\Code Cache\js\"	>nul 2>&1
-		del /q /s /f "!edgeDataDir!\%%B\Code Cache\wasm\"	>nul 2>&1
-		del /q /s /f "!edgeDataDir!\%%B\Service Worker\CacheStorage\"	>nul 2>&1
-		del /q /s /f "!edgeDataDir!\%%B\Service Worker\ScriptCache\"	>nul 2>&1
-		del /q /s /f "!edgeDataDir!\%%B\gpucache\"	>nul 2>&1
-		del /q /s /f "!edgeDataDir!\component_crx_cache\"	>nul 2>&1
-		del /q /s /f "!edgeDataDir!\GrShaderCache\"	>nul 2>&1
-		del /q /s /f "!edgeDataDir!\ShaderCache\"	>nul 2>&1
+		del /q /s /f "!edgeDataDir!\%%B\Cache\cache_data\*"	>nul 2>&1
+		del /q /s /f "!edgeDataDir!\%%B\Code Cache\js\*"	>nul 2>&1
+		del /q /s /f "!edgeDataDir!\%%B\Code Cache\wasm\*"	>nul 2>&1
+		del /q /s /f "!edgeDataDir!\%%B\Service Worker\CacheStorage\*"	>nul 2>&1
+		del /q /s /f "!edgeDataDir!\%%B\Service Worker\ScriptCache\*"	>nul 2>&1
+		del /q /s /f "!edgeDataDir!\%%B\gpucache\*"	>nul 2>&1
+		del /q /s /f "!edgeDataDir!\component_crx_cache\*"	>nul 2>&1
+		del /q /s /f "!edgeDataDir!\GrShaderCache\*"	>nul 2>&1
+		del /q /s /f "!edgeDataDir!\ShaderCache\*"	>nul 2>&1
 			)
 		)
 		REM Clean up the temporary file after each profile is processed
@@ -390,9 +390,11 @@ ECHO Be patient, this process can take a while depending on how much temporary C
 	ECHO	/////  installs Cleanup process is about to begin.  You will NOT be able to      /////
 	ECHO	/////  restore your pc to a previous date / installation if you type Y.          /////
 	ECHO	//////////////////////////////////////////////////////////////////////////////////////
-	set /p c=Are you sure you wish to continue? [Y/N]?
-	if /I "%c%" EQU "Y" goto removeRestorePoints
-	if /I "%c%" EQU "N" goto hibernation
+	set /p c=Are you sure you wish to continue? [Y/N] Default is Y
+	CHOICE /C YN /N /T 10 /D Y
+
+IF ERRORLEVEL 2 GOTO end
+IF ERRORLEVEL 1 GOTO removeRestorePoints
 :removeRestorePoints
 	vssadmin delete shadows /all >nul 2>&1
 ::The next line can be enabled by removing the "::" if you want the system to create a new restore point.
@@ -433,3 +435,4 @@ echo ********************************************
 ECHO All cleaned up, have a nice day!
 
 	PAUSE
+
