@@ -29,8 +29,6 @@ ECHO The Beard of Knowledge automagic workstation repair script. Follow on Youtu
 ::
 ECHO Checking your Windows Drive for Errors
 	chkdsk /scan /perf /sdcleanup /forceofflinefix c:
-ECHO Running Windows System Files Checker to check and repair errors
-	sfc /scannow
 ECHO Checking Windows Image Health
 	dism /online /cleanup-image /scanhealth
 ECHO Restoring Image Health
@@ -39,7 +37,8 @@ ECHO Cleaning Image Components
 	Dism.exe /online /Cleanup-Image /StartComponentCleanup
 ECHO Reset Base Image
 	Dism.exe /online /Cleanup-Image /StartComponentCleanup /ResetBase
- 
+ ECHO Running Windows System Files Checker to check and repair errors
+	sfc /scannow
 ::WMIcorruptionfix
 ECHO Repairing Windows Management Instrumentation
 
@@ -96,6 +95,7 @@ shutdown -r -t 0
 
 :END
 exit
+
 
 
 
