@@ -1,11 +1,7 @@
-::::::::::::::::::::::::::::::::::::::::::::
 :: Automatically check & get admin rights ::
-::::::::::::::::::::::::::::::::::::::::::::
 @ECHO OFF
 color f0
-ECHO =============================
 ECHO Running Admin shell
-ECHO =============================
  
 :checkPrivileges 
 	NET FILE 1>NUL 2>NUL
@@ -15,13 +11,10 @@ ECHO =============================
     	powershell -Command "Start-Process cmd -ArgumentList '/c %~s0 %*' -Verb RunAs"
     	exit /b
 :gotPrivileges 
-::::::::::::::::::::::::::::
-:STARTINTRO
-::::::::::::::::::::::::::::
-::cls
+cls
 	@ECHO OFF
 color
-	TITLE Welcome to Beard Sweeper! TBOK disk cleanup script!
+	TITLE Beard Sweeper v11212025! TBOK disk cleanup script!
 	ECHO Beard Sweeper, TBOK automagic disk cleanup script!
 	ECHO 	.TTTTTTTTT...BBBBB.......OOOO.....K....K.
 	ECHO 	.....T.......B....B.....O....O....K...K..
@@ -43,7 +36,7 @@ color
 	ECHO 	Credit...RayneDance.. https://github.com/RayneDance For improving ::chrome/edge profile handling...ThankYou!
 	ECHO 	Credit...WebFoundUs..https://tiktok.com/webb_found_us For the Name "Beard Sweeper"
 	ECHO	Credit...tristanghanks..https://github.com/tristanghanks for catching and fixing all typo errors!
-	ECHO Version 11-05-2025 mm/dd/yyyy
+	ECHO 	Version 11-21-2025 mm/dd/yyyy
 :StartofScript
 	echo ********************************************
 	ECHO 	Your Current free space of hard drive:
@@ -75,39 +68,39 @@ ECHO Setting Hibernation based on PC chassis type
 		if /i "%Type%"=="Laptop" goto laptop
 		if /i "%Type%"=="Desktop" goto desktop
 :laptop
-	ECHO Laptop detected - enabling hibernation mode
+	ECHO Laptop detected - enabled hibernation mode
 	powercfg -h on
-	goto NEXT
+	goto BadprintJobs
 :desktop
-	ECHO Desktop detected - disabling hibernation mode
+	ECHO Desktop detected - disabled hibernation mode
 	powercfg -h off
-	goto NEXT
-:NEXT	
 
 :BadPrintJobs
 	ECHO Deleting unreleased erroneous print jobs
 	NET STOP /Y Spooler >nul 2>&1
-	DEL /S /Q /F %systemdrive%\windows\system32\spool\printers\*.* >nul 2>&1
+	DEL /S /Q /F %systemroot%\system32\spool\printers\*.* >nul 2>&1
 	net start spooler >nul 2>&1
 	
 :fontcache
+	ECHO Clearing all Windows Font Cache
 	Net stop fontcache >nul 2>&1
-	DEL /S /Q /F %systemdrive%\Windows\ServiceProfiles\LocalService\AppData\Local\*.* >nul 2>&1
+	DEL /S /Q /F %systemroot%\ServiceProfiles\LocalService\AppData\Local\FontCache\*.* >nul 2>&1
 	NET start fontcache	>nul 2>&1
 
 :WindowsUpdatesCleanup
-	echo STOPPING WINDOWS UPDATE SERVICES
+	echo Performing Windows Updates Cleanup
 	net stop bits >nul 2>&1
 	net stop wuauserv >nul 2>&1
 	net stop appidsvc >nul 2>&1
 	net stop cryptsvc >nul 2>&1
-	DEL /S /Q /F "%ALLUSERSPROFILE%\Application Data\Microsoft\Network\Downloader\"	>nul 2>&1
+	ECHO Clearing Windows Update Cache
+	DEL /S /Q /F "%ALLUSERSPROFILE%\Application Data\Microsoft\Network\Downloader\*.*"	>nul 2>&1
 	rmdir /S /Q "%systemroot%\SoftwareDistribution" >nul 2>&1
 	rmdir /S /Q "%systemroot%\system32\catroot2" >nul 2>&1
 ::commented out the below line because rolling back updates is needed, and it's usually only 1-2Gb.  If you don't care about rolling back updates (DANGER Will Robinson), remove the :: in front of the next line.	
 	::rmdir /S /Q "%systemroot%\Installer\$PatchCache$"
 	DEL /S /Q /F "%systemroot%\ServiceProfiles\NetworkService\AppData\Local\Microsoft\Windows\DeliveryOptimization\Logs\*.*" >nul 2>&1
-	echo STARTING WINDOWS UPDATE SERVICES AFTER CLEANUP
+	echo Cleanup Complete - Starting Windows Update Services
 	net start bits >nul 2>&1
 	net start wuauserv >nul 2>&1
 	net start appidsvc >nul 2>&1
@@ -115,20 +108,29 @@ ECHO Setting Hibernation based on PC chassis type
 
 :WindowsTempFilesCleanup
 	ECHO Deleting all System temporary files
-	DEL /S /Q /F "%TMP%\" >nul 2>&1	
-	DEL /S /Q /F "%TEMP%\" >nul 2>&1
-	DEL /S /Q /F "%WINDIR%\Temp\" >nul 2>&1
-	DEL /S /Q /F "%WINDIR%\Prefetch\" >nul 2>&1
-	DEL /S /Q /F "%WINDIR%\Logs\CBS\" >nul 2>&1
-	DEL /S /Q /F "%WINDIR%\Logs\DPX\*.log" >nul 2>&1
-	DEL /S /Q /F "%WINDIR%\Logs\DISM\*.log" >nul 2>&1
-	DEL /S /Q /F "%WINDIR%\Logs\MeasuredBoot\*.log" >nul 2>&1
-	DEL /S /Q /F "%WINDIR%\SoftwareDistribution\DataStore\Logs\" >nul 2>&1
-	DEL /S /Q /F "%WINDIR%\runSW.log" >nul 2>&1
-	DEL /S /Q /F "%WINDIR%\system32\sru\*.log" >nul 2>&1
-	DEL /S /Q /F "%WINDIR%\system32\sru\*.dat" >nul 2>&1
-	DEL /S /Q /F "%WINDIR%\LiveKernelReports\*.dmp"	>nul 2>&1
-	DEL /S /Q /F "%WINDIR%\appcompat\backuptest\" >nul 2>&1
+	DEL /S /Q /F "%TMP%\*.*" >nul 2>&1	
+	DEL /S /Q /F "%TEMP%\*.*" >nul 2>&1
+	DEL /S /Q /F "%systemroot%\Temp\*.*" >nul 2>&1
+	DEL /S /Q /F "%systemroot%\Prefetch\*.*" >nul 2>&1
+	DEL /S /Q /F "%systemroot%\system32\sru\*.dat" >nul 2>&1
+	DEL /S /Q /F "%systemroot%\LiveKernelReports\*.dmp"	>nul 2>&1
+	DEL /S /Q /F "%systemroot%\appcompat\backuptest\*.*" >nul 2>&1
+	DEL /S /Q /F "%systemroot%\System32\sru\*.dat" >nul 2>&1
+
+:WindowsLogs
+	ECHO Cleaning Windows Log Files
+	DEL /S /Q /F "%systemroot%\Logs\NetSetup\*.*" >nul 2>&1
+	DEL /S /Q /F "%systemroot%\Logs\SIH\*.*" >nul 2>&1
+	DEL /S /Q /F "%systemroot%\Logs\CBS\*.*" >nul 2>&1
+	DEL /S /Q /F "%systemroot%\Logs\DPX\*.log" >nul 2>&1
+	DEL /S /Q /F "%systemroot%\Logs\DISM\*.log" >nul 2>&1
+	DEL /S /Q /F "%systemroot%\Logs\MeasuredBoot\*.log" >nul 2>&1
+	DEL /S /Q /F "%systemroot%\SoftwareDistribution\DataStore\Logs\*.*" >nul 2>&1
+	DEL /S /Q /F "%systemroot%\runSW.log" >nul 2>&1
+	DEL /S /Q /F "%systemroot%\system32\sru\*.log" >nul 2>&1
+	DEL /S /Q /F "%systemroot%\Logs\WindowsUpdate\*.*" >nul 2>&1
+	DEL /S /Q /F "%systemroot%\Logs\*.LOG" >nul 2>&1
+	DEL /S /Q /F "%systemdrive%\ProgramData\USOshared\Logs\User\*.*" >nul 2>&1
 	
 :UserProfileCleanup
 	ECHO Cleaning up user profiles
@@ -140,8 +142,13 @@ ECHO Setting Hibernation based on PC chassis type
 	DEL /S /Q /F "%%u\AppData\Local\CrashDumps\*.*" 	>nul 2>&1
 	DEL /S /Q /F "%%u\AppData\LocalLow\Microsoft\CryptnetUrlCache\Content\*.*"	>nul 2>&1
 	DEL /S /Q /F "%%u\AppData\Roaming\Microsoft\Teams\Service Worker\CacheStorage\*.*"	>nul 2>&1
-	DEL /S /Q /F "%%u\AppData\Local\Microsoft\explorer\thumbcache*"	>nul 2>&1
+	DEL /S /Q /F "%%u\AppData\Local\Microsoft\explorer\thumbcache\*.*"	>nul 2>&1
 	DEL /S /Q /F "%%u\AppData\Local\CrashDumps\*.*"	>nul 2>&1
+	DEL /S /Q /F "%%u\AppData\Local\Microsoft\Terminal Server Client\Cache\*.*"	>nul 2>&1
+	DEL /S /Q /F "%%u\AppData\Local\Microsoft\Office\16.0\OfficeFileCache\*.*"	>nul 2>&1
+	DEL /S /Q /F "%%u\AppData\Roaming\Microsoft\PowerPoint\*.tmp" >nul 2>&1
+	DEL /S /Q /F "%%u\AppData\Roaming\Microsoft\Word\*.*" >nul 2>&1
+	DEL /S /Q /F "%%u\AppData\Roaming\Microsoft\Excel\*.*" >nul 2>&1
 	)
 :TheRecycleBinIsNotAfolder
 	ECHO Emptying the recycle bin... you weren't ACTUALLY storing stuff in there, were you? I hope not.
@@ -152,12 +159,13 @@ ECHO Setting Hibernation based on PC chassis type
 	ECHO Clearing iTunes cached installers, iOS device firmware cache for all users
 	taskkill /f /IM itunes.exe >nul 2>&1
 	RD /S /Q "%systemdrive%\ProgramData\Apple Inc\Installer Cache"	>nul 2>&1
+	RD /S /Q "%systemdrive%\ProgramData\Apple Computer\Installer Cache"	>nul 2>&1
 	For /d %%u in (c:\users\*) do (
 	RD /S /Q "%%u\AppData\roaming\Apple Computer\iTunes\iPhone Software Updates"	>nul 2>&1
 	RD /S /Q "%%u\AppData\roaming\Apple Computer\iTunes\iPod Software Updates"	>nul 2>&1
 	)
-ECHO iOS device Backups cleanup
-	set /p a=Do you wish to also delete any existing mobile phone iTunes device backups? [Y/N] Default is Y
+	ECHO iOS device Backups cleanup
+	ECHO Do you wish to also delete any existing mobile phone iTunes device backups? [Y/N] Default is Y
 	CHOICE /C YN /N /T 10 /D Y
 
 	IF ERRORLEVEL 2 GOTO FreakenMicrosoftTeams
@@ -165,83 +173,118 @@ ECHO iOS device Backups cleanup
 :iOSbackups
 	For /d %%u in (c:\users\*) do (
 	RD /S /Q "%%u\AppData\roaming\Apple Computer\MobileSync\Backup"	>nul 2>&1
+	RD /S /Q "%%u\Apple\MobileSync\Backup" >nul 2>&1
 	)
 :FreakenMicrosoftTeams
 	ECHO Clearing Microsoft Teams Cache for all users
-	%systemdrive%\windows\system32\taskkill /F /IM teams.exe >nul 2>&1
-	%systemdrive%\windows\system32\taskkill /F /IM ms-teams.exe >nul 2>&1
+	taskkill /F /IM teams.exe >nul 2>&1
+	taskkill /F /IM ms-teams.exe >nul 2>&1
 	For /d %%u in (c:\users\*) do (
-	RD /S /Q "%%u\AppData\roaming\microsoft\teams"			>nul 2>&1
-	RD /S /Q "%%u\AppData\roaming\microsoft\teams\blob_storage"	>nul 2>&1
-	RD /S /Q "%%u\AppData\roaming\microsoft\teams\cache"		>nul 2>&1
-	RD /S /Q "%%u\AppData\roaming\microsoft\teams\databases"	>nul 2>&1
-	RD /S /Q "%%u\AppData\roaming\microsoft\teams\gpucache"		>nul 2>&1
-	RD /S /Q "%%u\AppData\roaming\microsoft\teams\indexeddb"	>nul 2>&1
-	RD /S /Q "%%u\AppData\roaming\microsoft\teams\Local Storage"	>nul 2>&1
-	RD /S /Q "%%u\AppData\roaming\microsoft\teams\tmp"		>nul 2>&1
-	RD /S /Q "%%u\AppData\Local\Packages\MSTeams_8wekyb3d8bbwe"	>nul 2>&1
+	DEL /S /Q /F "%%u\AppData\roaming\microsoft\teams\*"			>nul 2>&1
+	DEL /S /Q /F "%%u\AppData\roaming\microsoft\teams\blob_storage\*"	>nul 2>&1
+	DEL /S /Q /F "%%u\AppData\roaming\microsoft\teams\cache\*"		>nul 2>&1
+	DEL /S /Q /F "%%u\AppData\roaming\microsoft\teams\databases\*"	>nul 2>&1
+	DEL /S /Q /F "%%u\AppData\roaming\microsoft\teams\gpucache\*"		>nul 2>&1
+	DEL /S /Q /F "%%u\AppData\roaming\microsoft\teams\indexeddb\*"	>nul 2>&1
+	DEL /S /Q /F "%%u\AppData\roaming\microsoft\teams\Local Storage\*"	>nul 2>&1
+	DEL /S /Q /F "%%u\AppData\roaming\microsoft\teams\tmp\*"		>nul 2>&1
+	DEL /S /Q /F "%%u\AppData\Local\Packages\MSTeams_8wekyb3d8bbwe\*"	>nul 2>&1
 	)
 
 :OutlookCache
 	ECHO Clearing Outlook Cache
+	taskkill /F /IM outlook.exe >nul 2>&1
 	%systemdrive%\windows\system32\taskkill /F /IM outlook.exe >nul 2>&1
 	For /d %%u in (c:\users\*) do (
 	RD /S /Q "%%u\AppData\Microsoft\Outlook\RoamCache\"	 >nul 2>&1
 	)	
-::SCCM	
-::commented this out because SCCM doesn't rebuild cache if deleted manually and will fail to show/install software.
-::Will update to use powershell command using date/time and will have validations.
-::Reserved for SCCM cleanup powershell invoke script
-::	ECHO Cleaning CCM Cache
-::	DEL /S /Q /F "%systemdrive%\windows\ccmcache\"	 >nul 2>&1
+:OneDrive
+ECHO Cleaning OneDrive Cache for all users - OneDrive will be closed to prevent file locks
+    taskkill /f /IM "OneDrive.exe" >nul 2>&1
+	taskkill /f /IM "FileCoAuth.exe" >nul 2>&1
+    SETLOCAL EnableDelayedExpansion
+
+    ECHO Cleaning Cache files for all users
+    For /d %%u in ("%systemdrive%\users\*") do (
+        SET "oneDriveDataDir=%%u\AppData\Local\Microsoft\OneDrive"
+
+        del /q /s /f "!oneDriveDataDir!\logs\*.*" >nul 2>&1
+        del /q /s /f "!oneDriveDataDir!\temp\*.*" >nul 2>&1
+        del /q /s /f "!oneDriveDataDir!\update\*.*" >nul 2>&1
+        del /q /s /f "!oneDriveDataDir!\syncengine\*.*" >nul 2>&1
+        del /q /s /f "!oneDriveDataDir!\Telemetry\*.*" >nul 2>&1
+        del /q /s /f "%%u\AppData\Local\OneDrive\Cache\qmlcache\*.*" >nul 2>&1
+    )
+
+    ECHO Cleaning System OneDrive temporary files
+		del /q /s /f "%SystemRoot%\Temp\OneDrive*.*" >nul 2>&1
+		del /q /s /f "%ProgramData%\Microsoft OneDrive\*.*" >nul 2>&1
+		del /q /s /f "%SystemRoot%\SysWOW64\config\systemprofile\AppData\Local\Microsoft\OneDrive\*.*" >nul 2>&1
+		del /q /s /f "%SystemRoot%\System32\config\systemprofile\AppData\Local\Microsoft\OneDrive\*.*" >nul 2>&1
+		del /q /s /f "%SystemRoot%\System32\config\systemprofile\AppData\Local\Microsoft\OneDrive\Cache\qmlcache\*.*" >nul 2>&1
+		del /q /s /f "%SystemRoot%\SysWOW64\config\systemprofile\AppData\Local\Microsoft\OneDrive\Cache\qmlcache\*.*" >nul 2>&1
+
+    ENDLOCAL
+	Echo DONE - Remember to reopen OneDrive to resume file sync.
 
 :WEbBrowsers
-	ECHO IExplore, Edge, Chrome, and Edgewebview Web browsers will be closed in order to clean all cache, remember CTRL+SHIFT+T to restore your browsing sessions.
-	PAUSE
+	ECHO IExplore, Edge, Chrome, Firefox, and Edgewebview will be closed in order to clean all cache.
+	ECHO Remember to use CTRL+SHIFT+T to restore your last browsing sessions.
+	TIMEOUT 10
 	ECHO Terminating Browsers and Removing temporary Internet Browser cache, no user data will be deleted
-	taskkill /f /IM "iexplore.exe" >nul 2>&1
-	taskkill /f /IM "msedge.exe" >nul 2>&1
-	taskkill /f /IM "msedgewebview2.exe" >nul 2>&1
-	taskkill /f /IM "chrome.exe" >nul 2>&1
 
 :InternetExploder
- ECHO Cleaning Internet Explorer cache
-	%systemdrive%\Windows\System32\rundll32.exe InetCpl.cpl, ClearMyTracksByProcess 255 >nul 2>&1
-	%systemdrive%\Windows\System32\rundll32.exe InetCpl.cpl, ClearMyTracksByProcess 4351 >nul 2>&1
+ ECHO Cleaning Internet Explorer cache for all users
+ 	taskkill /f /IM "iexplore.exe" >nul 2>&1
+	%systemroot%\System32\rundll32.exe InetCpl.cpl, ClearMyTracksByProcess 255 >nul 2>&1
+	%systemroot%\System32\rundll32.exe InetCpl.cpl, ClearMyTracksByProcess 4351 >nul 2>&1
+	:: Loop through all user profiles in C:\Users
+		for /d %%u in ("C:\Users\*") do (
+		echo Processing %%u...
+    :: Delete IE Temporary Internet Files (cache)
+		del /s /q "%%u\AppData\Local\Microsoft\Windows\INetCache\*.*" 2>nul
+		del /s /q "%%u\AppData\Local\Microsoft\Windows\Temporary Internet Files\*.*" 2>nul
+	)
 
 :GoogleChrome
- ECHO Cleaning Google Chrome Cache
-
+ ECHO Cleaning Google Chrome Cache for all users and profiles
+	taskkill /f /IM "chrome.exe" >nul 2>&1
 	SETLOCAL EnableDelayedExpansion
 	For /d %%u in ("%systemdrive%\users\*") do (
 	SET "chromeDataDir=%%u\AppData\Local\Google\Chrome\User Data"
 	SET "folderListFile=!TEMP!\chrome_profiles.txt"
 
-	REM Find the matching folders and store them in the temporary file
+	:: Find matching folders and store them in the temporary file
 	FOR /D %%A IN ("!chromeDataDir!\Default" "!chromeDataDir!\Profile *") DO (
 	ECHO %%~nA>> "!folderListFile!"
 	)
 
 	IF EXIST "!folderListFile!" (
 	FOR /F "usebackq tokens=*" %%B IN ("!folderListFile!") DO (
-		del /q /s /f "!chromeDataDir!\%%B\Cache\cache_data\*"	>nul 2>&1
-		del /q /s /f "!chromeDataDir!\%%B\Code Cache\js\*"	>nul 2>&1
-		del /q /s /f "!chromeDataDir!\%%B\Code Cache\wasm\*"	>nul 2>&1
-		del /q /s /f "!chromeDataDir!\%%B\Service Worker\CacheStorage\*"	>nul 2>&1
-		del /q /s /f "!chromeDataDir!\%%B\Service Worker\ScriptCache\*"	>nul 2>&1
-		del /q /s /f "!chromeDataDir!\%%B\gpucache\*"	>nul 2>&1
-		del /q /s /f "!chromeDataDir!\component_crx_cache\*"	>nul 2>&1
-		del /q /s /f "!chromeDataDir!\GrShaderCache\*"	>nul 2>&1
-		del /q /s /f "!chromeDataDir!\ShaderCache\*"	>nul 2>&1
+		del /q /s /f "!chromeDataDir!\%%B\Cache\cache_data\*.*"	>nul 2>&1
+		del /q /s /f "!chromeDataDir!\%%B\Code Cache\js\*.*"	>nul 2>&1
+		del /q /s /f "!chromeDataDir!\%%B\Code Cache\wasm\*.*"	>nul 2>&1
+		del /q /s /f "!chromeDataDir!\%%B\Service Worker\CacheStorage\*.*"	>nul 2>&1
+		del /q /s /f "!chromeDataDir!\%%B\Service Worker\ScriptCache\*.*"	>nul 2>&1
+		del /q /s /f "!chromeDataDir!\%%B\gpucache\*.*"	>nul 2>&1
+		del /q /s /f "!chromeDataDir!\System Profile\Cache\cache_data\*.*"	>nul 2>&1
+		del /q /s /f "!chromeDataDir!\System Profile\Code Cache\js\*.*"	>nul 2>&1
+		del /q /s /f "!chromeDataDir!\System Profile\Code Cache\wasm\*.*"	>nul 2>&1
+		del /q /s /f "!chromeDataDir!\extensions_crx_cache\*.*"	>nul 2>&1
+		del /q /s /f "!chromeDataDir!\component_crx_cache\*.*"	>nul 2>&1
+		del /q /s /f "!chromeDataDir!\GrShaderCache\*.*"	>nul 2>&1
+		del /q /s /f "!chromeDataDir!\ShaderCache\*.*"	>nul 2>&1
 			)
 		)
-		REM Clean up the temporary file after each profile is processed
+		:: Clean up the temporary file used for processing
     	IF EXIST "!folderListFile!" DEL /Q /F "!folderListFile!"
 	)
 	ENDLOCAL
 		
 :EdgeChromiumCache
-ECHO Cleaning Edge -Chromium- Cache
+ECHO Cleaning Edge -Chromium- Cache for all users and profiles
+	taskkill /f /IM "msedge.exe" 
+	taskkill /f /IM "msedgewebview2.exe" 
 	SETLOCAL EnableDelayedExpansion
 	For /d %%u in ("%systemdrive%\users\*") do (
 	SET "edgeDataDir=%%u\AppData\Local\Microsoft\Edge\User Data"
@@ -253,57 +296,51 @@ ECHO Cleaning Edge -Chromium- Cache
 	)
 
 	IF EXIST "!folderListFile!" (
-	FOR /F "usebackq tokens=*" %%B IN ("!folderListFile!") DO (
-		del /q /s /f "!edgeDataDir!\%%B\Cache\cache_data\*"	>nul 2>&1
-		del /q /s /f "!edgeDataDir!\%%B\Code Cache\js\*"	>nul 2>&1
-		del /q /s /f "!edgeDataDir!\%%B\Code Cache\wasm\*"	>nul 2>&1
-		del /q /s /f "!edgeDataDir!\%%B\Service Worker\CacheStorage\*"	>nul 2>&1
-		del /q /s /f "!edgeDataDir!\%%B\Service Worker\ScriptCache\*"	>nul 2>&1
-		del /q /s /f "!edgeDataDir!\%%B\gpucache\*"	>nul 2>&1
-		del /q /s /f "!edgeDataDir!\component_crx_cache\*"	>nul 2>&1
-		del /q /s /f "!edgeDataDir!\GrShaderCache\*"	>nul 2>&1
-		del /q /s /f "!edgeDataDir!\ShaderCache\*"	>nul 2>&1
+		FOR /F "usebackq tokens=*" %%B IN ("!folderListFile!") DO (
+			del /q /s /f "!edgeDataDir!\%%B\Cache\cache_data\*.*"		>nul 2>&1
+			del /q /s /f "!edgeDataDir!\%%B\Code Cache\js\*.*"		>nul 2>&1
+			del /q /s /f "!edgeDataDir!\%%B\Code Cache\wasm\*.*"		>nul 2>&1
+			del /q /s /f "!edgeDataDir!\%%B\Service Worker\CacheStorage\*.*"		>nul 2>&1
+			del /q /s /f "!edgeDataDir!\%%B\Service Worker\ScriptCache\*.*"		>nul 2>&1
+			del /q /s /f "!edgeDataDir!\%%B\gpucache\*.*"		>nul 2>&1
+			del /q /s /f "!edgeDataDir!\%%B\EdgeCoupons\coupons_data.db\*.ldb"		>nul 2>&1
+			del /q /s /f "!edgeDataDir!\%%B\Media Cache\*.*" 	>nul 2>&1
+			del /q /s /f "!edgeDataDir!\%%B\GPUCache\*.*" 	>nul 2>&1
+			del /q /s /f "!edgeDataDir!\%%B\Crashpad\*.*" 	>nul 2>&1
+			del /q /s /f "!edgeDataDir!\%%B\IndexedDB\*.*" 	>nul 2>&1
+			del /q /s /f "!edgeDataDir!\%%B\Local Storage\*.*" 	>nul 2>&1
+			del /q /s /f "!edgeDataDir!\%%B\OptimizationGuidePredictionModels\*.*" 	>nul 2>&1
+			del /q /s /f "!edgeDataDir!\extensions_crx_cache\*.*"		>nul 2>&1
+			del /q /s /f "!edgeDataDir!\BrowserMetrics\*.*"		>nul 2>&1
+			del /q /s /f "!edgeDataDir!\*.pma"		>nul 2>&1
+			del /q /s /f "!edgeDataDir!\component_crx_cache\*.*"		>nul 2>&1
+			del /q /s /f "!edgeDataDir!\GrShaderCache\*.*"		>nul 2>&1
+			del /q /s /f "!edgeDataDir!\ShaderCache\*.*"		>nul 2>&1
 			)
 		)
 		REM Clean up the temporary file after each profile is processed
-    	IF EXIST "!folderListFile!" DEL /Q /F "!folderListFile!"
+    	IF EXIST "!folderListFile!" DEL /Q /F "!folderListFile!"	>nul 2>&1
 	)
 	ENDLOCAL
 
-:FireFoxCacheWorkInProgress
-::	taskkill /f /IM "firefox.exe" >nul 2>&1
-::	
-::	For /d %%u in (%systemdrive%\users\*) do
-::	cd /d "%%u\AppData\Local\Mozilla\Firefox\Profiles"
-::
-::	for /d %%a in (*.default) do (
-::	if exist %%a (
-::	for /D %%p in (%%a\cache2) do rmdir "%%p" /S /Q > NUL 2> NUL
-::	del %%a\cache2\* /F /Q /S > NUL 2> NUL
-::	for /D %%p in (%%a\startupCache) do rmdir "%%p" /S /Q > NUL 2> NUL
-::	del %%a\startupCache\* /F /Q /S > NUL 2> NUL
-::	for /D %%p in (%%a\jumpListCache) do rmdir "%%p" /S /Q > NUL 2> NUL
-::	del %%a\jumpListCache\* /F /Q /S > NUL 2> NUL
-::	for /D %%p in (%%a\OfflineCache) do rmdir "%%p" /S /Q > NUL 2> NUL
-::	del %%a\OfflineCache\* /F /Q /S > NUL 2> NUL
-::		)
-::	)
-::
-::	for /d %%a in (*.default-release) do (
-::	if exist %%a (
-::	for /D %%p in (%%a\cache2) do rmdir "%%p" /S /Q > NUL 2> NUL
-::	del %%a\cache2\* /F /Q /S > NUL 2> NUL
-::	for /D %%p in (%%a\startupCache) do rmdir "%%p" /S /Q > NUL 2> NUL
-::	del %%a\startupCache\* /F /Q /S > NUL 2> NUL
-::	for /D %%p in (%%a\jumpListCache) do rmdir "%%p" /S /Q > NUL 2> NUL
-::	del %%a\jumpListCache\* /F /Q /S > NUL 2> NUL
-::	for /D %%p in (%%a\OfflineCache) do rmdir "%%p" /S /Q > NUL 2> NUL
-::	del %%a\OfflineCache\* /F /Q /S > NUL 2> NUL
-::		)
-::	)
+:FireFoxCache
+echo Cleaning Firefox Cache for all users...
+	taskkill /f /im firefox.exe >nul 2>&1
+
+	for /d %%u in ("%systemdrive%\Users\*") do (
+		for /d %%p in ("%%u\AppData\Local\Mozilla\Firefox\Profiles\*") do (
+			echo Processing profile: %%p
+			if exist "%%p\cache2\entries" (
+				del /q /s /f "%%p\cache2\entries\*"
+				)
+			if exist "%%p\startupCache" (
+            del /q /s /f "%%p\startupCache\*"
+			)
+		)
+	)
 
 :CLEANMGR
-	ECHO Configuring Disk Cleanup registry settings for all safe to delete content
+	ECHO Maximizing Disk Cleanup registry settings for all safe to delete content
 
 :: Set all the CLEANMGR registry entries for Group #69 -have a sense of humor!
 	SET _Group_No=StateFlags0069	
@@ -381,8 +418,7 @@ ECHO DiskCleanup registry settings completed
 ECHO Running CleanMgr and Waiting for Disk Cleanup to complete, this takes a while - do not close this window!
 	START /wait CLEANMGR /sagerun:69 >nul 2>&1
 ECHO Be patient, this process can take a while depending on how much temporary Crap has accummulated in your system...
-	START CLEANMGR /verylowdisk /autoclean	>nul 2>&1
-
+	START /wait CLEANMGR /verylowdisk /autoclean	>nul 2>&1
 
 :RestorePointsCleaup
 	ECHO	//////////////////////////////////////////////////////////////////////////////////////
@@ -390,13 +426,13 @@ ECHO Be patient, this process can take a while depending on how much temporary C
 	ECHO	/////  installs Cleanup process is about to begin.  You will NOT be able to      /////
 	ECHO	/////  restore your pc to a previous date / installation if you type Y.          /////
 	ECHO	//////////////////////////////////////////////////////////////////////////////////////
-	set /p c=Are you sure you wish to continue? [Y/N] Default is Y
+	ECHO Are you sure you wish to continue? [Y/N] Default is Y
 	CHOICE /C YN /N /T 10 /D Y
 
 IF ERRORLEVEL 2 GOTO end
 IF ERRORLEVEL 1 GOTO removeRestorePoints
 :removeRestorePoints
-	::vssadmin delete shadows /all >nul 2>&1
+	::vssadmin delete shadows /all >nul 2>&1 ::commended out due to triggerring some antivirus programs
 ::The next line can be enabled by removing the "::" if you want the system to create a new restore point.
 ::wmic.exe /Namespace:\\root\default Path SystemRestore Call CreateRestorePoint "AfterDiskCleanup", 100, 7 >nul 2>&1
 
@@ -435,6 +471,3 @@ echo ********************************************
 ECHO All cleaned up, have a nice day!
 
 	PAUSE
-
-
-
