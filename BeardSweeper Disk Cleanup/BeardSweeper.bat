@@ -283,8 +283,8 @@ ECHO Cleaning OneDrive Cache for all users - OneDrive will be closed to prevent 
 		
 :EdgeChromiumCache
 ECHO Cleaning Edge -Chromium- Cache for all users and profiles
-	taskkill /f /IM "msedge.exe" 
-	taskkill /f /IM "msedgewebview2.exe" 
+	taskkill /f /IM "msedge.exe" 	>nul 2>&1
+	taskkill /f /IM "msedgewebview2.exe" 	>nul 2>&1
 	SETLOCAL EnableDelayedExpansion
 	For /d %%u in ("%systemdrive%\users\*") do (
 	SET "edgeDataDir=%%u\AppData\Local\Microsoft\Edge\User Data"
@@ -471,3 +471,4 @@ echo ********************************************
 ECHO All cleaned up, have a nice day!
 
 	PAUSE
+
