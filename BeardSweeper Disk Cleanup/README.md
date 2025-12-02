@@ -3,12 +3,13 @@
 <p align="center">
 <img src="https://github.com/TheBeardofKnowledge/Scripts-from-my-videos/blob/main/BeardSweeper%20Disk%20Cleanup/BeardSweeperCharacter.png" />
 </p>
+
 ## Why did I make this?  Because there were no disk cleanup utilities or scripts that covered removing everything I was finding hoarding space in Windows related to cache or temporary files.
 ### Using or making a script like this also let's you be less dependent on third-party utilities and reduce the number of external resources you need to perform repeditive tasks.
 Aren't you tired of Windows and programs leaving everything old all over your drive and taking up unnecessary space? 
   Yeah, me too, so I started doing something about it... this script.
 
-  The target use for this is home and work computers running Windows 10, and 11 (no server OS's)
+  The target use for this is home and work computers running Windows 10, and 11 (home, pro, ltsc, iot)
 
 This has been made as an accumulation of a lot of testing, and adding to the script until 
 it covered as much "safe to delete" temporary files as possible for the most commonly seen situations.
