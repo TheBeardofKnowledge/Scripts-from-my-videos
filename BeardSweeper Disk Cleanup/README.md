@@ -1,8 +1,8 @@
 # BeardSweeper - The Ultimate Windows Disk Cleanup Script
 <img src="https://github.com/TheBeardofKnowledge/Scripts-from-my-videos/blob/main/BeardSweeper%20Disk%20Cleanup/BeardSweeperCharacter.png" />
 
-## Why did I make this?  Because there were no disk cleanup utilities or scripts that covered everything I was finding hoarding space in Windows.
-
+## Why did I make this?  Because there were no disk cleanup utilities or scripts that covered removing everything I was finding hoarding space in Windows related to cache or temporary files.
+### Using or making a script like this also let's you be less dependent on third-party utilities and reduce the number of external resources you need to perform repeditive tasks.
 Aren't you tired of Windows and programs leaving everything old all over your drive and taking up unnecessary space? 
   Yeah, me too, so I started doing something about it... this script.
 
@@ -19,7 +19,7 @@ When it comes to web browser files, I opted to only delete cache, as many users 
 
 You can find all my socials and contact info on my profile page.
                                       
-	**|SCRIPT WALKTHROUGH |**
+## |SCRIPT WALKTHROUGH |
 					
 The script itself is commented in each section, comments are indicated by :: at the beginning, but heres the full monty explanation...
 
@@ -36,8 +36,9 @@ A "shout out" if you will, with a 10 second timeout before it continues.
 :outdatedhibernatefile - 
 This disables Windows hibernation, also known as "Fast Startup" and deletes the hibernation file. 
 This Windows feature dumps ram to disk for restarts and also "deep sleep" modes, however, the feature was created when all computers had spinning disks. 
+
 When you warm boot your computer, everything in the hibernation file is restored to RAM and your system is presumably "ready faster".  
-Issue here is files are only replaced with "fresh copies" when you cold boot a system, and if a program has bad code that includes minor memory leaks, 
+Issue here, is files are only replaced with "fresh copies" when you cold boot a system, and if a program has bad code or includes minor memory leaks, 
 this can accumulate and use up all your ram, which can cause issues. Disabling this will ensure only fresh copies are loaded when you start your system.
 For desktops this will stay disabled at the end of the script, for laptops it will re-enable it due to peoples habits of letting the laptop 
 battery drain without shutting down their laptop first.
