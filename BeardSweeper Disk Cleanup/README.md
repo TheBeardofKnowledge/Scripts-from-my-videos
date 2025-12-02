@@ -4,7 +4,7 @@
 <img src="https://github.com/TheBeardofKnowledge/Scripts-from-my-videos/blob/main/BeardSweeper%20Disk%20Cleanup/BeardSweeperCharacter.png" />
 </p>
 
-## Why did I make this?  Because there were no disk cleanup utilities or scripts that covered removing everything I was finding hoarding space in Windows related to cache or temporary files.
+## Why did I make this?  Because there were no disk cleanup utilities or scripts that covered removing everything I was finding hoarding space in Windows related to cache or temporary files for all users of a pc.  Many free utilities only clean the current user's cache, and want payment to clean all users... ridiculous!
 ### Using or making a script like this also let's you be less dependent on third-party utilities and reduce the number of external resources you need to perform repeditive tasks.
 Aren't you tired of Windows and programs leaving everything old all over your drive and taking up unnecessary space? 
   Yeah, me too, so I started doing something about it... this script.
