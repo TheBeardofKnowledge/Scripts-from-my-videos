@@ -1,6 +1,7 @@
-!(<img src="https://github.com/TheBeardofKnowledge/Scripts-from-my-videos/blob/main/BeardSweeper%20Disk%20Cleanup/BeardSweeperCharacter.png" />)
+# BeardSweeper - The Ultimate Windows Disk Cleanup Script
+<img src="https://github.com/TheBeardofKnowledge/Scripts-from-my-videos/blob/main/BeardSweeper%20Disk%20Cleanup/BeardSweeperCharacter.png" />
 
-Why did I make this?  Because there were no disk cleanup utilities or scripts that covered everything I was finding hoarding space in Windows.
+## Why did I make this?  Because there were no disk cleanup utilities or scripts that covered everything I was finding hoarding space in Windows.
 
 Aren't you tired of Windows and programs leaving everything old all over your drive and taking up unnecessary space? 
   Yeah, me too, so I started doing something about it... this script.
