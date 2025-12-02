@@ -1,7 +1,9 @@
-<html><head><meta name="color-scheme" content="light dark"></head><body><pre style="word-wrap: break-word; white-space: pre-wrap;"><p align="center">;
-  &lt;img src="https://github.com/TheBeardofKnowledge/Scripts-from-my-videos/blob/main/BeardSweeper%20Disk%20Cleanup/BeardSweeperCharacter.png" />
+<html><head><meta name="color-scheme" content="light dark"></head><body><pre style="word-wrap: break-word; white-space: pre-wrap;">
+<p align="center">
+	<img src="https://github.com/TheBeardofKnowledge/Scripts-from-my-videos/blob/main/BeardSweeper%20Disk%20Cleanup/BeardSweeperCharacter.png" />
 </p>
-</p align="center"><strong>Why did I make this?  Because there were no disk cleanup utilities or scripts that covered everything I was finding hoarding space in Windows.</strong></p>
+</p align="center">
+<strong>Why did I make this?  Because there were no disk cleanup utilities or scripts that covered everything I was finding hoarding space in Windows.</strong></p>
 
 Aren't you tired of Windows and programs leaving everything old all over your drive and taking up unnecessary space? 
   Yeah, me too, so I started doing something about it... this script.
