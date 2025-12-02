@@ -1,15 +1,17 @@
 
-# BeardSweeper - The Ultimate Windows Disk Cleanup Script
+# BeardSweeper - ***The Ultimate Windows Disk Cleanup Script***
+
 <p align="center">
 <img src="https://github.com/TheBeardofKnowledge/Scripts-from-my-videos/blob/main/BeardSweeper%20Disk%20Cleanup/BeardSweeperCharacter.png" />
 </p>
 
-## Why did I make this?  Because there were no disk cleanup utilities or scripts that covered removing everything I was finding hoarding space in Windows related to cache or temporary files for all users of a pc.  Many free utilities only clean the current user's cache, and want payment to clean all users... ridiculous!
+## Why did I make this, and why you should you use it?
+Because there were no disk cleanup utilities or scripts that covered removing everything I was finding hoarding space in Windows related to cache or temporary files for all users of a pc.  Many free utilities only clean the current user's cache, and want payment to clean all users... ridiculous!
 ### Using or making a script like this also let's you be less dependent on third-party utilities and reduce the number of external resources you need to perform repeditive tasks.
 Aren't you tired of Windows and programs leaving everything old all over your drive and taking up unnecessary space? 
   Yeah, me too, so I started doing something about it... this script.
 
-  The target use for this is home and work computers running Windows 10, and 11 (home, pro, ltsc, iot)
+  ***The target use for this is home and work computers running Windows 10, and 11 (home, pro, ltsc, iot)***
 
 This has been made as an accumulation of a lot of testing, and adding to the script until 
 it covered as much "safe to delete" temporary files as possible for the most commonly seen situations.
@@ -19,8 +21,15 @@ The idea is to only remove what won't negatively affect a Windows Workstations w
 When it comes to web browser files, I opted to only delete cache, as many users depend on cookies and autofill data.
 
 
-
 You can find all my socials and contact info on my profile page.
+
+## How do you use it?
+* Simply download it to your pc.
+* open the folder where you saved it
+* right-click on it and go to properties
+* uncheck the bottom right option that says "unblock" (if you don't have this option, its ok, skip to the next step).
+* click ok
+* now just double-click the file to run it.
                                       
 ## |SCRIPT WALKTHROUGH |
 					
