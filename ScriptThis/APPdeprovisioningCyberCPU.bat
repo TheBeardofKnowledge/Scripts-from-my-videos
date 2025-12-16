@@ -55,5 +55,5 @@ goto MENU
 ::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Appx\AppxAllUserStore\Deprovisioned\
 
 ::co-pilot
-HKLM\SOFTWARE\Microsoft\Windows\WindowsCopilot\ -dword TurnOffWindowsCopilot 1
+::HKLM\SOFTWARE\Microsoft\Windows\WindowsCopilot\ -dword TurnOffWindowsCopilot 1
 ::allows you to uninstall co-pilot
