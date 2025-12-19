@@ -43,17 +43,57 @@ goto MENU
 
 :getlist
 ECHO Below are all the Provisioned APPS in this system:
-::Get UWP (Universal Windows Platform) names 
-powershell -command "Get-AppxProvisionedPackage -Online | Format-Table DisplayName, PackageName"
+::Get UWP (Universal Windows Platform) names
+ECHO ============================================================
 
-set /p removeapp="Enter the EXACT name of the app above you wish to uninstall: "
-::Deprovision UWP app. 
-powershell -command "Remove-AppxProvisionedPackage -Online -packagename "%removeapp%""
+setlocal EnableExtensions EnableDelayedExpansion
+
+::Optional: ensure UTF-8 to preserve special characters
+::chcp 65001 >nul
+
+::Collect PowerShell results into an in-memory array in batch ---
+set "count=0"
+for /f "usebackq delims= eol=" %%A in (`powershell -NoProfile -Command ^
+ "Get-AppxProvisionedPackage -Online | Format-Table PackageName"`) do (
+	set /a count+=1
+	rem Remove ALL spaces from the line
+	set "line=%%~A"
+	set "line=!line: =!"
+	set "item[!count!]=!line!"
+	)
+
+if not defined count (
+	echo No items returned from PowerShell.
+	exit /b 1
+	)
+
+::Render a numbered menu for use with selection
+	echo.
+	echo Showing Provisioned Packages and numbering for easier selection:
+	for /l %%I in (1,1,%count%) do (
+	echo   %%I^) !item[%%I]!
+	)
+
+::Get user input and validate ---
+	set "choice="
+	set /p "choice=Enter the number on the left of the item to remove (1-%count%): "
+
+::numeric validation
+	for /f "delims=0123456789" %%Z in ("%choice%") do set "choice="
+	if not defined choice goto ask
+	if %choice% LSS 1 goto ask
+	if %choice% GTR %count% goto ask
+
+		set "selected=!item[%choice%]!"
+		echo You selected: "%selected%"
+		echo.
+
+::action to perform on selection
+	echo Attempting to remove selected package:
+	powershell -NoProfile -Command "Remove-AppxProvisionedPackage -Online -PackageName '%selected%'"
+
+		endlocal
 PAUSE
 goto MENU
-::Registry key to verify deprovisioning
-::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Appx\AppxAllUserStore\Deprovisioned\
-
-::co-pilot
-::HKLM\SOFTWARE\Microsoft\Windows\WindowsCopilot\ -dword TurnOffWindowsCopilot 1
-::allows you to uninstall co-pilot
+:exit
+exit /b 0
