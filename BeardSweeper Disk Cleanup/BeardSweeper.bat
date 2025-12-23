@@ -198,7 +198,8 @@ ECHO Setting Hibernation based on PC chassis type
 	taskkill /F /IM outlook.exe >nul 2>&1
 	%systemdrive%\windows\system32\taskkill /F /IM outlook.exe >nul 2>&1
 	For /d %%u in (c:\users\*) do (
-	RD /S /Q "%%u\AppData\Microsoft\Outlook\RoamCache\"	 >nul 2>&1
+	RD /S /Q "%%u\AppData\Local\Microsoft\Outlook\RoamCache\"	 >nul 2>&1
+	RD /S /Q "%%u\AppData\Local\Microsoft\Windows\INetCache\Content.Outlook\"	 >nul 2>&1
 	)	
 :OneDrive
 ECHO Cleaning OneDrive Cache for all users - OneDrive will be closed to prevent file locks
@@ -473,5 +474,6 @@ echo ********************************************
 ECHO All cleaned up, have a nice day!
 
 	PAUSE
+
 
 
