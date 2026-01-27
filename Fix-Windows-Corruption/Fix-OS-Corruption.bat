@@ -89,7 +89,7 @@ ECHO DO NOT CLOSE OR CANCEL THIS PROCESS BEFORE IT COMPLETES
 ECHO :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 echo.
 echo Performing pre-flight checks...
-ping -n 1 microsoft.com >nul 2>&1
+ping -n 1 aka.ms >nul 2>&1
 	if !errorlevel! neq 0 (
 		echo WARNING: Could not connect to Microsoft Servers.
 		echo DISM RestoreHealth requires Windows Update access.
@@ -429,3 +429,4 @@ if exist "%PHASEFLAG%" (
 endlocal
 pause
 exit /b 0
+
