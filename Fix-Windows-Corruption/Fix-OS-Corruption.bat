@@ -49,8 +49,8 @@ echo ============================================ >> "%LOGFILE%"
 echo. >> "%LOGFILE%"
 cls
 :STARTINTRO
-TITLE The Beard of Knowledge automagic Windows repair script version 01-26-2026.
-ECHO The Beard of Knowledge automagic Windows repair script version 01-26-2026. 
+TITLE The Beard of Knowledge automagic Windows repair script version 01-27-2026.
+ECHO The Beard of Knowledge automagic Windows repair script version 01-27-2026. 
 ECHO Follow on Youtube! TheBeardofKnowledge https://thebeardofknowledge.bio.link/
 ECHO.
 ECHO THIS SCRIPT REQUIRES INTERNET ACCESS TO MICROSOFT WINDOWS UPDATE SERVERS TO RUN REPAIRS
@@ -429,4 +429,5 @@ if exist "%PHASEFLAG%" (
 endlocal
 pause
 exit /b 0
+
 
