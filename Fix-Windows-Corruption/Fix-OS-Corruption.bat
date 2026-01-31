@@ -20,9 +20,9 @@ set "LOGFILE=%~dp0TBOKfix-OS-corruption.log"
 set "PHASEFLAG=%~dp0RepairPhase.flag"
 goto resumecheck
 
-::log and echo helper to avoid duplicate lines
-::usage call :log "message"
-:Log 
+::LOG and echo helper to avoid duplicate lines
+::usage call :LOG "message"
+:LOG 
 echo %~1
 echo %~1>>"%LOGFILE%"
 exit /b
@@ -127,7 +127,7 @@ echo Checking if System Restore is enabled...
     PowerShell -ExecutionPolicy Bypass -Command "try { Checkpoint-Computer -Description 'Before TBOK System Repair' -RestorePointType 'MODIFY_SETTINGS' -ErrorAction Stop; exit 0 } catch { exit 1 }" >nul 2>&1
     if !errorlevel! equ 0 (
         echo Restore point created successfully.
-        call :log "Restore point created successfully"
+        call :LOG "Restore point created successfully"
     ) else (
         echo WARNING: Could not create restore point.
         echo This may be due to:
@@ -137,33 +137,33 @@ echo Checking if System Restore is enabled...
         echo  - Insufficient disk space
         echo.
         echo The script will continue without a restore point.
-        call :log "WARNING: Restore point creation failed"
+        call :LOG "WARNING: Restore point creation failed"
         pause
     )
 ) else (
-    call :log "System Restore disabled - restore point skipped"
+    call :LOG "System Restore disabled - restore point skipped"
 )
-call :log "[Phase 1 of 6] Running DISM operations"
+call :LOG "[Phase 1 of 6] Running DISM operations"
 ECHO Stopping Windows Search
 net stop "Windows Search" >> "%LOGFILE%" 2>&1
 
-call :log "[step 1/3] Quick Check Windows Image Health"
+call :LOG "[step 1/3] Quick Check Windows Image Health"
 	dism /online /cleanup-image /checkhealth >> "%LOGFILE%" 2>&1
 		if !errorlevel! neq 0 (
-		call :log "WARNING: CheckHealth reported issues or errors"
+		call :LOG "WARNING: CheckHealth reported issues or errors"
 		)
 		echo CheckHealth completed.
 echo.
 	
-call :log "[step 2/3] Deep Scanning Windows Image Health"
+call :LOG "[step 2/3] Deep Scanning Windows Image Health"
 	dism /online /cleanup-image /scanhealth >> "%LOGFILE%" 2>&1
 		if !errorlevel! neq 0 (
-		call :log "WARNING: ScanHealth detected corruption"
+		call :LOG "WARNING: ScanHealth detected corruption"
 		)
 		echo ScanHealth completed.
 echo.
 	
-call :log "[step 3/3] Restoring-Repair Image Health"
+call :LOG "[step 3/3] Restoring-Repair Image Health"
 dism /online /cleanup-image /restorehealth >> "%LOGFILE%" 2>&1
 	if !errorlevel! neq 0 (
 		echo.
@@ -190,7 +190,7 @@ echo.
 :: PHASE 2: Schedule CHKDSK for Next Boot
 REM ============================================================================
 echo.
-call :log "[PHASE 2 of 6] Scheduling Disk Check for next boot..."
+call :LOG "[PHASE 2 of 6] Scheduling Disk Check for next boot..."
 echo.
 
 echo Y | chkdsk %systemdrive% /f >> "%LOGFILE%" 2>&1
@@ -227,8 +227,7 @@ echo.
     :: Create scheduled task to resume script at next logon
 	schtasks /create /tn "TBOKWindowsRepairResume" /tr "'%~dpnx0' /resume" /sc onlogon /rl highest /f >> "%LOGFILE%" 2>&1
     if !errorlevel! equ 0 (
-        call :log "Auto-resume task created successfully."
-        
+        call :LOG "Auto-resume task created successfully."
         echo.
         echo ============================================
         echo IMPORTANT: What happens next
@@ -242,19 +241,17 @@ echo.
         echo ============================================
         echo.
         timeout /t 10
-        call :log "Logging restart timestamp..."
-        call :log "System restart initiated: %date% %time%"
+        call :LOG "Logging restart timestamp..."
+        call :LOG "System restart initiated: %date% %time%"
         shutdown -r -t 5 -c "TBOK Restarting for CHKDSK and DISM completion. Repair script will auto-resume after login."
-        exit
 	) else (
         echo WARNING: Did not create auto-resume task.
         echo You will need to re-run this script manually after restart.
-        echo.
+		echo.
 		echo ============================================
-		echo WARNING: Restart and Continued Repairs Declined
 		echo Your system has not been checked completely.
 		echo ============================================
-		echo You chose to leave this process incomplete.
+		echo Process incomplete.
 		echo.
 		echo This means:
 		echo  - CHKDSK will NOT run (disk errors may remain^)
@@ -267,36 +264,36 @@ echo.
 		echo Consider allowing the script to complete.
 		echo ============================================
 		echo.
-		call :log "User chose to continue without restart"
+		call :LOG "User chose to continue without restart"
 		pause
-		exit
-    )
+		exit /b
 )
 
 :PHASE3_RESUME
-::PHASE 3: System File Checker
+::PHASE 3: After System restart
+::System File Checker
 TITLE TBOK System Repair Script Continued
 echo.
-call :log "Resuming TBOK System Repair Script"
-call :log "[Phase 3 of 6] Running System File Checker"
+call :LOG "Resuming TBOK System Repair Script"
+call :LOG "[Phase 3 of 6] Running System File Checker"
 echo This may take 10-20 minutes...
 echo.
 
 	sfc /scannow >> "%LOGFILE%" 2>&1
 		if %errorlevel% neq 0 (
-			call :log "WARNING: SFC found issues or encountered errors - Check CBS.log for details."
+			call :LOG "WARNING: SFC found issues or encountered errors - Check CBS.log for details."
 		) else (
 		echo SFC scan completed successfully.
 	)
 
 echo.
-call :log "[PHASE 4 of 6] Component Store Cleanup..."
+call :LOG "[PHASE 4 of 6] Component Store Cleanup..."
 echo This may take several minutes...
 echo.
 
 	dism /online /cleanup-image /startcomponentcleanup /resetbase >> "%LOGFILE%" 2>&1
 		if %errorlevel% neq 0 (
-			call :log "WARNING: Component cleanup encountered errors"
+			call :LOG "WARNING: Component cleanup encountered errors"
 		) else (
 		echo Component cleanup completed successfully.
 	)
@@ -306,7 +303,7 @@ echo.
 ::WMIcorruptionfix
 ::(WMI corruption fix with delayed expansion)
 echo.
-call :log "[PHASE 5 of 6] WMI Repository Check and Repair"
+call :LOG "[PHASE 5 of 6] WMI Repository Check and Repair"
 echo.
 ECHO Repairing Windows Management Instrumentation
 ECHO This is an aggressive repair. It will stop the WMI service,
@@ -315,21 +312,20 @@ ECHO MOF files in the WBEM directory, except uninstallers.
 ECHO. 
 
 set /p REPAIR_WMI="Do you want to check and repair WMI? (Y/N): "
-setlocal enabledelayedexpansion
 if /i "%REPAIR_WMI%"=="Y" (
     echo.
     echo [PHASE 5 of 6] WMI Repository Repair... >> "%LOGFILE%"
     echo Checking WMI Repository consistency...
     winmgmt /verifyrepository >> "%LOGFILE%" 2>&1
     if !errorlevel! equ 0 (
-        call :log "WMI Repository is consistent - no repair needed."
+        call :LOG "WMI Repository is consistent - no repair needed."
     ) else (
-        call :log "WMI Repository is inconsistent - attempting repair..."
-        call :log "Disabling and stopping the WMI service..."
+        call :LOG "WMI Repository is inconsistent - attempting repair..."
+        call :LOG "Disabling and stopping the WMI service..."
         sc config winmgmt start= disabled >> "%LOGFILE%" 2>&1
         net stop winmgmt /y >> "%LOGFILE%" 2>&1
         
-        call :log "[1/3] Registering all WMI provider DLLs..."
+        call :LOG "[1/3] Registering all WMI provider DLLs..."
         cd /d %windir%\system32\wbem
         for /f %%s in ('dir /b *.dll') do (
             echo Registering %%s... >> "%LOGFILE%"
@@ -340,7 +336,7 @@ if /i "%REPAIR_WMI%"=="Y" (
         winmgmt /regserver >> "%LOGFILE%" 2>&1
         echo DLL registration complete.
         
-        call :log "[2/3] Recompiling MOF and MFL files (excluding uninstallers^)..."
+        call :LOG "[2/3] Recompiling MOF and MFL files (excluding uninstallers^)..."
         dir /b *.mof *.mfl | findstr /v /i "uninstall" > mof_exclude.txt
         for /f %%s in (mof_exclude.txt) do (
             echo Compiling %%s... >> "%LOGFILE%"
@@ -349,7 +345,7 @@ if /i "%REPAIR_WMI%"=="Y" (
         if exist mof_exclude.txt del mof_exclude.txt
         echo MOF compilation complete.
         
-        call :log "[3/3] Re-enabling and starting WMI service..."
+        call :LOG "[3/3] Re-enabling and starting WMI service..."
         sc config winmgmt start= auto >> "%LOGFILE%" 2>&1
         net start winmgmt >> "%LOGFILE%" 2>&1
         timeout /t 5 /nobreak >nul       
@@ -357,7 +353,7 @@ if /i "%REPAIR_WMI%"=="Y" (
         echo Verifying WMI repository after repair...
         winmgmt /verifyrepository >> "%LOGFILE%" 2>&1
         if !errorlevel! equ 0 (
-            call :log "WMI Repository repair completed successfully."
+            call :LOG "WMI Repository repair completed successfully."
         ) else (
             echo WARNING: WMI Repository may still have issues.
             echo Consider running 'winmgmt /resetrepository' manually if problems persist.
@@ -369,25 +365,24 @@ if /i "%REPAIR_WMI%"=="Y" (
     echo WMI repair skipped by user.
     echo WMI repair skipped by user. >> "%LOGFILE%"
 )
-endlocal
 echo.
 echo [PHASE 6 of 6] Windows Store Apps Re-registration...
 echo.
 set /p REPAIR_APPX="Do you want to re-register Windows Store Apps? (Y/N): "
 if /i "!REPAIR_APPX!"=="Y" (
     echo.
-    call :log "Re-registering AppX Packages..."
+    call :LOG "Re-registering AppX Packages..."
     
     PowerShell -ExecutionPolicy Bypass -Command "Get-AppXPackage -AllUsers | Foreach {Add-AppxPackage -DisableDevelopmentMode -Register \"$($_.InstallLocation)\AppXManifest.xml\" -ErrorAction SilentlyContinue}"
     
     if !errorlevel! neq 0 (
-        call :log "WARNING: Some AppX packages may have failed to register."
+        call :LOG "WARNING: Some AppX packages may have failed to register."
     ) else (
         echo AppX re-registration completed successfully.
     )
     echo.
 ) else (
-    call :log "AppX re-registration skipped by user."
+    call :LOG "AppX re-registration skipped by user."
 )
 
 :completed
@@ -426,10 +421,10 @@ echo ============================================ >> "!LOGFILE!"
 
 ::after cleanup
 if exist "%PHASEFLAG%" (
-    call :log " Cleaning up auto-resume task..."
+    call :LOG " Cleaning up auto-resume task..."
     schtasks /delete /tn "TBOKWindowsRepairResume" /f >nul 2>&1
     if %errorlevel% equ 0 (
-    call :log "Auto-resume task deleted successfully."
+    call :LOG "Auto-resume task deleted successfully."
     )
     del "%PHASEFLAG%" >nul 2>&1
     if exist "%PHASEFLAG%" (
