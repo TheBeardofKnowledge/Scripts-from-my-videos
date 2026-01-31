@@ -244,7 +244,8 @@ echo.
         call :LOG "Logging restart timestamp..."
         call :LOG "System restart initiated: %date% %time%"
         shutdown -r -t 5 -c "TBOK Restarting for CHKDSK and DISM completion. Repair script will auto-resume after login."
-	) else (
+		exit /b
+) else (
         echo WARNING: Did not create auto-resume task.
         echo You will need to re-run this script manually after restart.
 		echo.
@@ -436,3 +437,4 @@ if exist "%PHASEFLAG%" (
 endlocal
 pause
 exit /b 0
+
