@@ -36,12 +36,13 @@ if errorlevel 1 goto :checksystem
 :checksystem
 :: ---------- 1. Windows 24H2 build 26100+ ----------
 ECHO Checking Installed Windows Build
-for /f "tokens=4-5 delims=. " %%A in ('ver') do set /a BUILD=%%B
+for /f "tokens=2,*" %%A in ('reg query "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion" /v CurrentBuildNumber ^| find /I "CurrentBuildNumber"') do set "BUILD=%%B"
 if %BUILD% LSS 26100 (
     echo This Windows Build is not compatible with this change
     pause
     goto :menu
 )
+
 :: ---------- 2. Standard NVM Express Controller present ----------
 driverquery /fo csv | find /I "Standard NVM Express Controller" >nul || (
     echo This system Storage Controller is not compatible with this change
@@ -109,4 +110,5 @@ ECHO
 	shutdown -r -t 0
 ::=========================================================================
 PAUSE
+
 EXIT
