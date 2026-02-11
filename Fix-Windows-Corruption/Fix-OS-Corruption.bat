@@ -245,7 +245,7 @@ echo.
         call :LOG "System restart initiated: %date% %time%"
         shutdown -r -t 5 -c "TBOK Restarting for CHKDSK and DISM completion. Repair script will auto-resume after login."
 		exit /b
-) else (
+	) else (
         echo WARNING: Did not create auto-resume task.
         echo You will need to re-run this script manually after restart.
 		echo.
@@ -302,7 +302,6 @@ echo.
 
 	
 ::WMIcorruptionfix
-::(WMI corruption fix with delayed expansion)
 echo.
 call :LOG "[PHASE 5 of 6] WMI Repository Check and Repair"
 echo.
@@ -319,36 +318,56 @@ if /i "%REPAIR_WMI%"=="Y" (
     echo Checking WMI Repository consistency...
     winmgmt /verifyrepository >> "%LOGFILE%" 2>&1
     if !errorlevel! equ 0 (
-        call :LOG "WMI Repository is consistent - no repair needed."
+        call :LOG "WMI Repository claims is consistent - no repair marked as needed"
+        echo.
+        echo However, you can force a repair if experiencing WMI issues - recommnended
+        set /p FORCE_WMI="Do you want to force WMI repair anyway? (Y/N): "
+        if /i "!FORCE_WMI!"=="Y" (
+            call :LOG "User chose to force WMI repair despite consistent repository"
+            goto WMI_REPAIR
+        ) else (
+            call :LOG "WMI repair skipped"
+            goto APPX_repair
+        )
     ) else (
         call :LOG "WMI Repository is inconsistent - attempting repair..."
-        call :LOG "Disabling and stopping the WMI service..."
-        sc config winmgmt start= disabled >> "%LOGFILE%" 2>&1
-        net stop winmgmt /y >> "%LOGFILE%" 2>&1
-        
-        call :LOG "[1/3] Registering all WMI provider DLLs..."
-        cd /d %windir%\system32\wbem
-        for /f %%s in ('dir /b *.dll') do (
-            echo Registering %%s... >> "%LOGFILE%"
-            regsvr32 /s %%s >> "%LOGFILE%" 2>&1
-        )
-        echo Registering WMI Provider Host and WMI Service...
-        wmiprvse /regserver >> "%LOGFILE%" 2>&1
-        winmgmt /regserver >> "%LOGFILE%" 2>&1
-        echo DLL registration complete.
-        
-        call :LOG "[2/3] Recompiling MOF and MFL files (excluding uninstallers^)..."
-        dir /b *.mof *.mfl | findstr /v /i "uninstall" > mof_exclude.txt
-        for /f %%s in (mof_exclude.txt) do (
-            echo Compiling %%s... >> "%LOGFILE%"
-            mofcomp %%s >> "%LOGFILE%" 2>&1
+        goto WMI_REPAIR
+    )
+    
+:WMI_REPAIR
+	call :LOG "Disabling and stopping the WMI service..."
+	sc config winmgmt start= auto >> "%LOGFILE%" 2>&1
+	net stop winmgmt /y >> "%LOGFILE%" 2>&1
+	timeout /t 5 /nobreak >nul
+    	call :LOG "WMI Repository is inconsistent or running forced repair..."      
+      
+	call :LOG "[1/3] Registering all WMI provider DLLs..."
+	cd /d %windir%\system32\wbem
+	for /f %%s in ('dir /b *.dll') do (
+        echo Registering %%s... >> "%LOGFILE%"
+        regsvr32 /s %%s >> "%LOGFILE%" 2>&1
+    )
+    echo Registering WMI Provider Host and WMI Service...
+    wmiprvse /regserver >> "%LOGFILE%" 2>&1
+    winmgmt /regserver >> "%LOGFILE%" 2>&1
+    echo DLL registration complete.
+	
+	call :LOG "Disabling and stopping the WMI service..."
+    net start winmgmt /y >> "%LOGFILE%" 2>&1
+    timeout /t 5 /nobreak >nul
+    
+    call :LOG "[2/3] Recompiling MOF and MFL files (excluding uninstallers^)..."
+	echo This process can be time consuming - allow it to finish
+    dir /b *.mof *.mfl | findstr /v /i "uninstall" > mof_exclude.txt
+    for /f %%s in (mof_exclude.txt) do (
+		echo Compiling %%s... >> "%LOGFILE%"
+        mofcomp %%s >> "%LOGFILE%" 2>&1
         )
         if exist mof_exclude.txt del mof_exclude.txt
         echo MOF compilation complete.
         
         call :LOG "[3/3] Re-enabling and starting WMI service..."
         sc config winmgmt start= auto >> "%LOGFILE%" 2>&1
-        net start winmgmt >> "%LOGFILE%" 2>&1
         timeout /t 5 /nobreak >nul       
 		
         echo Verifying WMI repository after repair...
@@ -363,20 +382,18 @@ if /i "%REPAIR_WMI%"=="Y" (
     )
     echo.
 ) else (
-    echo WMI repair skipped by user.
-    echo WMI repair skipped by user. >> "%LOGFILE%"
+    call :LOG "WMI repair skipped by user".
 )
 echo.
+:APPX_repair
 echo [PHASE 6 of 6] Windows Store Apps Re-registration...
 echo.
 set /p REPAIR_APPX="Do you want to re-register Windows Store Apps? (Y/N): "
 if /i "!REPAIR_APPX!"=="Y" (
     echo.
     call :LOG "Re-registering AppX Packages..."
-    
-    PowerShell -ExecutionPolicy Bypass -Command "Get-AppXPackage -AllUsers | Foreach {Add-AppxPackage -DisableDevelopmentMode -Register \"$($_.InstallLocation)\AppXManifest.xml\" -ErrorAction SilentlyContinue}"
-    
-    if !errorlevel! neq 0 (
+    call :ReReg_Appx
+    if errorlevel 1 (
         call :LOG "WARNING: Some AppX packages may have failed to register."
     ) else (
         echo AppX re-registration completed successfully.
@@ -385,6 +402,15 @@ if /i "!REPAIR_APPX!"=="Y" (
 ) else (
     call :LOG "AppX re-registration skipped by user."
 )
+goto :completed
+
+:: ----------------------------
+:: PowerShell subroutine
+:: ----------------------------
+:ReReg_Appx
+powershell -NoProfile -ExecutionPolicy Bypass -Command ^
+ "Get-AppXPackage -AllUsers | ForEach-Object { Add-AppxPackage -DisableDevelopmentMode -Register \"$($_.InstallLocation)\AppXManifest.xml\" -ErrorAction SilentlyContinue }"
+exit /b %errorlevel%
 
 :completed
 echo.
@@ -437,4 +463,3 @@ if exist "%PHASEFLAG%" (
 endlocal
 pause
 exit /b 0
-
