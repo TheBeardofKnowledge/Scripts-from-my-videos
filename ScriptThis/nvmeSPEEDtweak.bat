@@ -77,8 +77,8 @@ if /I not "%FOUNDSTORNVME%"=="STORNVME_FOUND" (
   goto :menu
 )
 ::BypassIO status-international
-set "BYPASSIO_OK="
-for /f "usebackq tokens=1,* delims=:" %%A in (`
+	set "BYPASSIO_OK="
+	for /f "usebackq tokens=1,* delims=:" %%A in (`
   fsutil bypassIo state %SystemDrive% /v 2^>nul ^| findstr /irc:"^\s*Status:\s*0\b" 
 `) do (
   set "BYPASSIO_OK=1"
@@ -138,6 +138,22 @@ ECHO If your system supports BYPASSIO for storage - DO NOT ENABLE THIS
 
 :enable
 echo Enabling Microsoft NVMe optimized storage driver...
+echo.
+echo Temporarily disabling bitlocker if enabled - else continue
+::BitLocker - Temporarily suspend protection on the OS drive for 1 reboot
+for /f "usebackq delims=" %%S in (`
+  powershell -NoProfile -Command "(Get-BitLockerVolume -MountPoint $env:SystemDrive).ProtectionStatus"
+`) do set "BL_PROT=%%S"
+
+if "%BL_PROT%"=="1" (
+  powershell -NoProfile -Command "Suspend-BitLocker -MountPoint $env:SystemDrive -RebootCount 1"
+  if errorlevel 1 (
+    echo [WARN] Failed to suspend BitLocker on %SystemDrive%. You may be prompted for a recovery key after reboot.
+  ) else (
+    echo BitLocker protection suspended for one reboot on %SystemDrive%.
+  )
+)
+echo.
 echo Attempting to create a system restore point
 
 ::Save current SystemRestorePointCreationFrequency (if present)
