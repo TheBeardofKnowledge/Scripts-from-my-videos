@@ -10,8 +10,6 @@ ECHO Running Admin shell
     	exit /b
 :gotPrivileges 
 	cls
-@ECHO OFF
-
 ::=========================================================================
 @echo off
 setlocal EnableExtensions
@@ -220,6 +218,7 @@ goto reboot
 PAUSE
 
 EXIT
+
 
 
 
