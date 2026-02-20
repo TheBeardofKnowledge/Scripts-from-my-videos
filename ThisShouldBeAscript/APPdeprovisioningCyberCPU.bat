@@ -18,7 +18,7 @@ ECHO Brought to you by The Beard of Knowledge
 ECHO Based on Video "How to remove Windows 11 Junk for Good! by CyberCPU Tech
 ::Enabling option to remove co-pilot
  REG ADD "HKLM\SOFTWARE\Microsoft\Windows\WindowsCopilot" /v /t REG_DWORD /d 00000001 /f	>nul 2>&1
-:MENU
+ :MENU
 
 echo.
 echo ====================================================================
@@ -48,60 +48,53 @@ ECHO ============================================================
 
 setlocal EnableExtensions EnableDelayedExpansion
 
-rem Optional: ensure UTF-8 to preserve special characters
-	chcp 65001 >nul
+::Optional: ensure UTF-8 to preserve special characters
+::chcp 65001 >nul
 
-rem --- 1) Collect PowerShell results into an in-memory array in batch ---
+::Collect PowerShell results into an in-memory array in batch ---
 set "count=0"
-for /f "usebackq delims= eol=" %%A in (`powershell -NoProfile -Command "Get-AppxProvisionedPackage -Online | Format-Table DisplayName, PackageName" do (
-  set /a count+=1
-  set "item[!count!]=%%~A"
-)
+for /f "usebackq delims= eol=" %%A in (`powershell -NoProfile -Command ^
+ "Get-AppxProvisionedPackage -Online | Format-Table PackageName"`) do (
+	set /a count+=1
+	rem Remove ALL spaces from the line
+	set "line=%%~A"
+	set "line=!line: =!"
+	set "item[!count!]=!line!"
+	)
 
 if not defined count (
-  echo No items returned from PowerShell.
-  exit /b 1
-)
+	echo No items returned from PowerShell.
+	exit /b 1
+	)
 
-rem --- 2) Render a numbered menu ---
-echo.
-echo Select a Provisioned Package to remove:
-for /l %%I in (1,1,%count%) do (
-  echo   %%I^) !item[%%I]!
-)
+::Render a numbered menu for use with selection
+	echo.
+	echo Showing Provisioned Packages and numbering for easier selection:
+	for /l %%I in (1,1,%count%) do (
+	echo   %%I^) !item[%%I]!
+	)
 
-rem --- 3) Get user input and validate ---
-:ask
-set "choice="
-set /p "choice=Enter number (1-%count%): "
+::Get user input and validate ---
+	set "choice="
+	set /p "choice=Enter the number on the left of the item to remove (1-%count%): "
 
-rem numeric validation
-for /f "delims=0123456789" %%Z in ("%choice%") do set "choice="
-if not defined choice goto ask
-if %choice% LSS 1 goto ask
-if %choice% GTR %count% goto ask
+::numeric validation
+	for /f "delims=0123456789" %%Z in ("%choice%") do set "choice="
+	if not defined choice goto ask
+	if %choice% LSS 1 goto ask
+	if %choice% GTR %count% goto ask
 
-set "selected=!item[%choice%]!"
-echo You selected: "%selected%"
-echo.
+		set "selected=!item[%choice%]!"
+		echo You selected: "%selected%"
+		echo.
 
-rem --- 4) Do something with the selection (example: show details) ---
-powershell -NoProfile -Command "Get-Service -Name '%selected%' | Format-List -Property *"
+::action to perform on selection
+	echo Attempting to remove selected package:
+	powershell -NoProfile -Command "Remove-AppxProvisionedPackage -Online -PackageName '%selected%'"
 
-endlocal
-exit /b 0
-
-============================================================= 
-::powershell -command "Get-AppxProvisionedPackage -Online | Format-Table DisplayName, PackageName"
-
-set /p removeapp="Enter the EXACT name of the app above you wish to uninstall: "
-::Deprovision UWP app. 
-powershell -command "Remove-AppxProvisionedPackage -Online -DisplayName "%removeapp%""
+		endlocal
 PAUSE
 goto MENU
-::Registry key to verify deprovisioning
-::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Appx\AppxAllUserStore\Deprovisioned\
+:exit
+exit /b 0
 
-::co-pilot
-HKLM\SOFTWARE\Microsoft\Windows\WindowsCopilot\ -dword TurnOffWindowsCopilot 1
-::allows you to uninstall co-pilot
