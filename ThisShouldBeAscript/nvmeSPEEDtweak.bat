@@ -1,6 +1,4 @@
-::template
-:: Automatically check and get admin rights ::
-::@ECHO OFF
+@echo off
 color f0
 ECHO Running Admin shell
 :checkPrivileges 
@@ -12,9 +10,8 @@ ECHO Running Admin shell
     	exit /b
 :gotPrivileges 
 	cls
-::@ECHO OFF
-color
-::SCRIPT TO TEST GOES BETWEEN THE ::==
+@ECHO OFF
+
 ::=========================================================================
 @echo off
 setlocal EnableExtensions
@@ -223,5 +220,6 @@ goto reboot
 PAUSE
 
 EXIT
+
 
 
