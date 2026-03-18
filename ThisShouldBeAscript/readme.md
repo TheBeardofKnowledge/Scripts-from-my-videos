@@ -1,6 +1,6 @@
 Combination of great stuff from videos I watch that should just be a script.  So I did.
 
- Please subscribing to my YouTube page!
+ Please subscribe to my YouTube channel, I would greatly appreciate it!
  https://www.youtube.com/@thebeardofknowledge
 
 
