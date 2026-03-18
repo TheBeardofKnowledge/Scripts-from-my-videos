@@ -1,4 +1,4 @@
-Combination of great stuff from videos I watch that should just be a script.  So I did.
+Have you ever watched a tech tips video with a bunch of steps and though... "that should just be a script".  I did, and now you can use them as well.
 
  Please subscribe to my YouTube channel, I would greatly appreciate it!
  https://www.youtube.com/@thebeardofknowledge
