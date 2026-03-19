@@ -105,6 +105,7 @@ ECHO Setting Hibernation based on PC chassis type
 	net start wuauserv >nul 2>&1
 	net start appidsvc >nul 2>&1
 	net start cryptsvc >nul 2>&1
+DISM /Online /Cleanup-Image /StartComponentCleanup /ResetBase
 
 :WindowsTempFilesCleanup
 	ECHO Deleting all System temporary files
