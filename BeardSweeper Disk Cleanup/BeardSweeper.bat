@@ -1,8 +1,9 @@
-:: Automatically check & get admin rights ::
+:: Automatically check and get admin rights ::
 @ECHO OFF
-color f0
-ECHO Running Admin shell
- 
+color 70
+ECHO Running Required Admin shell for full cleanup
+ECHO No changes are being made at this time.
+
 :checkPrivileges 
 	NET FILE 1>NUL 2>NUL
 	if '%errorlevel%' == '0' ( goto gotPrivileges ) else ( goto getPrivileges ) 
@@ -12,38 +13,40 @@ ECHO Running Admin shell
     	exit /b
 :gotPrivileges 
 cls
-	@ECHO OFF
-color
-	TITLE Beard Sweeper v11212025! TBOK disk cleanup script!
+	TITLE Beard Sweeper Version 04-03-2026! TBOK disk cleanup script!
 	ECHO Beard Sweeper, TBOK automagic disk cleanup script!
-	ECHO 	.TTTTTTTTT...BBBBB.......OOOO.....K....K.
-	ECHO 	.....T.......B....B.....O....O....K...K..
-	ECHO 	.....T.......B.....B...O......O...K..K...
-	ECHO 	.....T.......B....B....O......O...K.K....
-	ECHO 	.....T.......B..B......O......O...KK.....
-	ECHO 	.....T.......B....B....O......O...K.K....
-	ECHO 	.....T.......B.....B...O......O...K..K...
-	ECHO 	.....T.......B....B.....O....O....K...K..
-	ECHO 	.....T.......BBBBB.......OOOO.....K....K.
-	ECHO Community effort can be tracked at https://github.com/TheBeardofKnowledge/Scripts-from-my-videos
-	ECHO	Purpose of this batch file is to recover as much "safe" free space from your windows system drive
-	ECHO	in order to gain back free space that Windows, other programs, and users themselves have consumed.
-	ECHO 	Credits: Because the work we do in I.T. is often unrecognized, this section will show anyone
-	ECHO 	who contributes to the script to improve it.
-	ECHO 	TheBeardofKnowledge https://thebeardofknowledge.bio.link/
-	ECHO 	Contribution and Improvements credit on this script goes to the following....
-	ECHO 	Thank You to all that have given helpful feedback for improvements!
-	ECHO 	Credit...RayneDance.. https://github.com/RayneDance For improving ::chrome/edge profile handling...ThankYou!
-	ECHO 	Credit...WebFoundUs..https://tiktok.com/webb_found_us For the Name "Beard Sweeper"
-	ECHO	Credit...tristanghanks..https://github.com/tristanghanks for catching and fixing all typo errors!
-	ECHO 	Version 11-21-2025 mm/dd/yyyy
+	ECHO 	Version 04-03-2026 mm/dd/yyyy
+	ECHO.
+	ECHO __/\\\\\\\\\\\\\\\__/\\\\\\\\\\\\\_________/\\\\\_______/\\\________/\\\_        
+	ECHO  _\///////\\\/////__\/\\\/////////\\\_____/\\\///\\\____\/\\\_____/\\\//__       
+	ECHO   _______\/\\\_______\/\\\_______\/\\\___/\\\/__\///\\\__\/\\\__/\\\//_____      
+	ECHO    _______\/\\\_______\/\\\\\\\\\\\\\\___/\\\______\//\\\_\/\\\\\\//\\\_____     
+	ECHO     _______\/\\\_______\/\\\/////////\\\_\/\\\_______\/\\\_\/\\\//_\//\\\____    
+	ECHO      _______\/\\\_______\/\\\_______\/\\\_\//\\\______/\\\__\/\\\____\//\\\___   
+	ECHO       _______\/\\\_______\/\\\_______\/\\\__\///\\\__/\\\____\/\\\_____\//\\\__  
+	ECHO        _______\/\\\_______\/\\\\\\\\\\\\\/_____\///\\\\\/_____\/\\\______\//\\\_ 
+	ECHO         _______\///________\/////////////_________\/////_______\///________\///__  
+    ECHO.                                    
+	ECHO.	Community effort can be tracked at https://github.com/TheBeardofKnowledge/Scripts-from-my-videos
+	ECHO.	Purpose of this batch file is to recover as much "safe" free space from your windows system drive
+	ECHO.	to gain back free space that Windows, other programs, and users have consumed.
+	ECHO. 	Credits: Because the work we do in I.T. is often unrecognized, this section will show anyone
+	ECHO. 	who contributes to the script to improve it - Thank you to all that have helped and tested.
+	ECHO. 	TheBeardofKnowledge https://thebeardofknowledge.bio.link/
+	ECHO. 	Credit...RayneDance.. https://github.com/RayneDance For improving chrome-edge profile handling
+	ECHO. 	Credit...WebFoundUs.. https://tiktok.com/webb_found_us For the Name "Beard Sweeper"
+	ECHO.	Credit...tristanghanks..https://github.com/tristanghanks for catching and fixing all typo errors
+	ECHO.
 :StartofScript
-	echo ********************************************
+	ECHO *****************************************************
 	ECHO 	Your Current free space of hard drive:
 		powershell -command "(fsutil volume diskfree c:)[0]"
-	echo ********************************************
-	TIMEOUT 10
-
+	ECHO *****************************************************
+	::play message beep sound
+	rundll32.exe cmdext.dll,MessageBeepStub  >nul 2>&1
+	TIMEOUT 5
+	ECHO.
+	ECHO Initializing Garbage Disposal Procedure...
 :hibernation
 ECHO Setting Hibernation based on PC chassis type
 ::	Reasons to leave Hibernation/Fast Startup/Hybrid Shutdown disabled on desktops...
@@ -70,7 +73,7 @@ ECHO Setting Hibernation based on PC chassis type
 :laptop
 	ECHO Laptop detected - enabled hibernation mode
 	powercfg -h on
-	goto BadprintJobs
+	goto BadPrintJobs
 :desktop
 	ECHO Desktop detected - disabled hibernation mode
 	powercfg -h off
@@ -88,7 +91,7 @@ ECHO Setting Hibernation based on PC chassis type
 	NET start fontcache	>nul 2>&1
 
 :WindowsUpdatesCleanup
-	echo Performing Windows Updates Cleanup
+	ECHO Performing Windows Updates Cleanup
 	net stop bits >nul 2>&1
 	net stop wuauserv >nul 2>&1
 	net stop appidsvc >nul 2>&1
@@ -97,17 +100,18 @@ ECHO Setting Hibernation based on PC chassis type
 	DEL /S /Q /F "%ALLUSERSPROFILE%\Application Data\Microsoft\Network\Downloader\*.*"	>nul 2>&1
 	rmdir /S /Q "%systemroot%\SoftwareDistribution" >nul 2>&1
 	rmdir /S /Q "%systemroot%\system32\catroot2" >nul 2>&1
-::commented out the below line because rolling back updates is needed, and it's usually only 1-2Gb.  If you don't care about rolling back updates (DANGER Will Robinson), remove the :: in front of the next line.	
-	::rmdir /S /Q "%systemroot%\Installer\$PatchCache$"
+::commented out the below line because rolling back updates is needed, and it's usually only 1-2Gb.  
+::If you don't care about rolling back updates (DANGER Will Robinson), remove the :: in front of the next line.	
+	::rmdir /S /Q "%systemroot%\Installer\$PatchCache$"  >nul 2>&1
 	DEL /S /Q /F "%systemroot%\ServiceProfiles\NetworkService\AppData\Local\Microsoft\Windows\DeliveryOptimization\Logs\*.*" >nul 2>&1
-	echo Cleanup Complete - Starting Windows Update Services
+	ECHO Cleanup Complete - Starting Windows Update Services
 	net start bits >nul 2>&1
 	net start wuauserv >nul 2>&1
 	net start appidsvc >nul 2>&1
 	net start cryptsvc >nul 2>&1
-	DISM /Online /Cleanup-Image /StartComponentCleanup
+	DISM /Online /Cleanup-Image /StartComponentCleanup >nul 2>&1
 ::for extra aggressive cleanup -uncomment the next line by removing the :: but keep in mind you won't be able to revert this cleanup
-::DISM /Online /Cleanup-Image /StartComponentCleanup /ResetBase
+	::DISM /Online /Cleanup-Image /StartComponentCleanup /ResetBase
 
 :WindowsTempFilesCleanup
 	ECHO Deleting all System temporary files
@@ -119,7 +123,7 @@ ECHO Setting Hibernation based on PC chassis type
 	DEL /S /Q /F "%systemroot%\LiveKernelReports\*.dmp"	>nul 2>&1
 	DEL /S /Q /F "%systemroot%\appcompat\backuptest\*.*" >nul 2>&1
 	DEL /S /Q /F "%systemroot%\System32\sru\*.dat" >nul 2>&1
-
+	
 :WindowsLogs
 	ECHO Cleaning Windows Log Files
 	DEL /S /Q /F "%systemroot%\Logs\NetSetup\*.*" >nul 2>&1
@@ -203,7 +207,8 @@ ECHO Setting Hibernation based on PC chassis type
 	For /d %%u in (c:\users\*) do (
 	RD /S /Q "%%u\AppData\Local\Microsoft\Outlook\RoamCache\"	 >nul 2>&1
 	RD /S /Q "%%u\AppData\Local\Microsoft\Windows\INetCache\Content.Outlook\"	 >nul 2>&1
-	)	
+	)
+	
 :OneDrive
 ECHO Cleaning OneDrive Cache for all users - OneDrive will be closed to prevent file locks
     taskkill /f /IM "OneDrive.exe" >nul 2>&1
@@ -233,6 +238,20 @@ ECHO Cleaning OneDrive Cache for all users - OneDrive will be closed to prevent 
     ENDLOCAL
 	Echo DONE - Remember to reopen OneDrive to resume file sync.
 
+:WindowsSearchreset
+	ECHO Stopping the Search Service to clear and reset
+	sc config wsearch start=disabled >nul 2>&1
+	sc stop wsearch >nul 2>&1
+	timeout /t 5 /nobreak >nul 2>&1
+	::flagging the search database as dirty so it can reindex
+	REG ADD "HKLM\SOFTWARE\Microsoft\Windows Search" /v SetupCompletedSuccessfully /t REG_DWORD /d 0 /f >nul 2>&1
+	::clearing out the existing search database
+	DEL /S /Q /F /A "%systemdrive%\ProgramData\Microsoft\Search\Data\Applications\Windows\*.*"  >nul 2>&1
+	::restoring Search service defaults
+	sc config wsearch start=delayed-auto  >nul 2>&1
+	::sc start wsearch
+	ECHO Windows Search Successfully Reset - search results will be limited while it rebuilds
+
 :WEbBrowsers
 	ECHO IExplore, Edge, Chrome, Firefox, and Edgewebview will be closed in order to clean all cache.
 	ECHO Remember to use CTRL+SHIFT+T to restore your last browsing sessions.
@@ -246,7 +265,7 @@ ECHO Cleaning OneDrive Cache for all users - OneDrive will be closed to prevent 
 	%systemroot%\System32\rundll32.exe InetCpl.cpl, ClearMyTracksByProcess 4351 >nul 2>&1
 	:: Loop through all user profiles in C:\Users
 		for /d %%u in ("C:\Users\*") do (
-		echo Processing %%u...
+		ECHO Processing %%u...
     :: Delete IE Temporary Internet Files (cache)
 		del /s /q "%%u\AppData\Local\Microsoft\Windows\INetCache\*.*" 2>nul
 		del /s /q "%%u\AppData\Local\Microsoft\Windows\Temporary Internet Files\*.*" 2>nul
@@ -330,12 +349,12 @@ ECHO Cleaning Edge -Chromium- Cache for all users and profiles
 	ENDLOCAL
 
 :FireFoxCache
-echo Cleaning Firefox Cache for all users...
+ECHO Cleaning Firefox Cache for all users...
 	taskkill /f /im firefox.exe >nul 2>&1
 
 	for /d %%u in ("%systemdrive%\Users\*") do (
 		for /d %%p in ("%%u\AppData\Local\Mozilla\Firefox\Profiles\*") do (
-			echo Processing profile: %%p
+			ECHO Processing profile: %%p
 			if exist "%%p\cache2\entries" (
 				del /q /s /f "%%p\cache2\entries\*"
 				)
@@ -468,15 +487,13 @@ IF exist "%systemdrive%\$Windows.~WS" (
 	ECHO No previous windows version folders found
 	)
 :END
-echo ********************************************
+ECHO ********************************************
 ECHO New free space of hard drive:
 	powershell -command "(fsutil volume diskfree c:)[0]"
-echo ********************************************
-
+ECHO ********************************************
+ECHO.
 	color 0A
 ECHO All cleaned up, have a nice day!
-
+:endmusic
+powershell -NoProfile -Command "$player = New-Object System.Media.SoundPlayer \"$env:windir\Media\windows logon.wav\"; $player.PlaySync()"
 	PAUSE
-
-
-
