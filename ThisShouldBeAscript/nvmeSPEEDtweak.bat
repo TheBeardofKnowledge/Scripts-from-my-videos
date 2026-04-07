@@ -132,7 +132,7 @@ ECHO.
 
 :bypassio
 ::BypassIO status (not language dependent - fsutil returned language results)
-ECHO Checking for BypassIO in use - it is not yet fully compatible with the new NVMe driver
+ECHO Checking for BypassIO use as it is not yet fully compatible
 
 set KEY=HKLM\SYSTEM\CurrentControlSet\Services\storport\Parameters
 set VALUE=EnableBypassIO
@@ -140,7 +140,7 @@ set VALUE=EnableBypassIO
 ::Query registry WITHOUT parsing localized text
 reg query "%KEY%" /v %VALUE% >nul 2>&1
 if errorlevel 1 (
-    echo BypassIO is NOT enabled - registry value not present
+    echo 	BypassIO is NOT enabled - registry value not present
     goto bypassiosystemdrive
 )
 
@@ -188,7 +188,7 @@ if %ERR%==0 (
   pause
   goto :menu
 ) else (
-  ECHO 	BypassIO-compatible storage not detected- continuing...
+  ECHO 		BypassIO-compatible storage not detected- continuing...
 )
 :systemverifiedcompatible
   	ECHO ************************************************************
@@ -245,7 +245,10 @@ if defined SRPF_BACKUP (
 )
 endlocal
 :registry
+ECHO.
 ECHO 	Enabling NVME storage features in registry
+ECHO.
+
 ::Feature Flag 156965516  (Standalone_Future - Performance optimizations)
 ECHO 	Enabling Performance Optimizations
 reg add HKLM\SYSTEM\CurrentControlSet\Policies\Microsoft\FeatureManagement\Overrides /v 156965516 /t REG_DWORD /d 1 /f
@@ -256,6 +259,7 @@ reg add HKLM\SYSTEM\CurrentControlSet\Policies\Microsoft\FeatureManagement\Overr
 ECHO 	Enabling NVMe Stack for GeClient
 reg add HKLM\SYSTEM\CurrentControlSet\Policies\Microsoft\FeatureManagement\Overrides /v 735209102 /t REG_DWORD /d 1 /f
 :: OptionalFeature Flag 1176759950 -Microsoft Official Server 2025 key
+ECHO 	Alternate optional key for Server 2025
 reg add HKLM\SYSTEM\CurrentControlSet\Policies\Microsoft\FeatureManagement\Overrides /v 1176759950 /t REG_DWORD /d 1 /f
 
 ::new workarounds
@@ -266,8 +270,10 @@ reg add HKLM\SYSTEM\CurrentControlSet\Policies\Microsoft\FeatureManagement\Overr
 ::safemode fallback
 ECHO Enabling SafeMode fallback registry entries
 ::SafeBoot Minimal
+ECHO 	Enabling SafeMode Minimal Fallback registry change
 reg add "HKLM\SYSTEM\CurrentControlSet\Control\SafeBoot\Network\{75416E63-5912-4DFA-AE8F-3EFACCAFFB14}" /ve /d "Storage Disks" /f
 ::SafeBoot Network
+ECHO 	Enabling SafeMode with Networking Fallback registry change
 reg add "HKLM\SYSTEM\CurrentControlSet\Control\SafeBoot\Minimal\{75416E63-5912-4DFA-AE8F-3EFACCAFFB14}" /ve /d "Storage Disks" /f
 ECHO. 
 	set /p q=A system restart is required for the changes, reboot? [Y/N]?
