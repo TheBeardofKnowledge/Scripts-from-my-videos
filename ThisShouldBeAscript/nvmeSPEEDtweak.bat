@@ -13,16 +13,16 @@ ECHO Running Admin shell
 	cls
 ::@ECHO OFF
 color
-TITLE TBOK NVMe Windows Driver Enabler Release 03-17-2026
-Updated 03-17-2026
+TITLE TBOK NVMe Windows Driver Enabler Release 04-07-2026
+Updated 04-10-2026
 setlocal EnableExtensions
 chcp 65001 >nul
 cls
 :menu
 ::Disclaimer
-ECHO ================================
-ECHO *PLEASE READ-Known compatibility issues*
-ECHO ================================
+ECHO ******************************************
+ECHO  *PLEASE READ-Known compatibility issues*
+ECHO ******************************************
 ECHO Not all SSDs switch to StorNVMe.sys. Some vendors firmware and drivers such as
 ECHO Samsung-WD-Intel-AMD-Crucial"Micron"-SKhynix-Physon provide their own NVMe drivers
 ECHO and will continue to use their vendor driver stack-so this script will read it incompatible
@@ -45,7 +45,7 @@ ECHO        NVMe Driver Menu
 ECHO ================================
 ECHO 1. Check system for compatibility and enable new NVMe driver if applicable
 ECHO 2. I know what I am doing so just apply the changes for the new NVME driver
-ECHO 3. Undo "reverse" Microsoft NVMe optimized storage driver changes
+ECHO 3. Undo "reverse" Microsoft NVMe optimized storage driver registry changes
 ECHO 4. Exit
 ECHO ================================
 choice /c 1234 /n /m "Select 1-4: "
@@ -74,11 +74,13 @@ if %BUILD% LSS 26100 (
 	ECHO Windows 11 24H2 build 2600 or newer is required
 	ECHO ************************************************
     pause
-    goto :menu
+    goto menu
 )
-ECHO Windows Build Meets Requirements
+ECHO.
+ECHO 	Installed Windows Build Meets Requirements
+ECHO.
 ::NVMe controller present_region-free
-:: Look for any SCSI/RAID controller whose PCI identifiers show NVMe class code CC_010802
+ECHO.
 ECHO Checking Active Storage Controller is Microsoft Standard NVM Express Controller
 ECHO.
 set "NVME_CONTROLLER="
@@ -89,17 +91,20 @@ for /f "usebackq delims=" %%I in (`powershell -NoProfile -Command ^
   "if ($dev) { 'NVME_OK' }"`) do (
   set "NVME_CONTROLLER=%%I"
 )
-
-echo NVME_CONTROLLER=%NVME_CONTROLLER%
-
 if /I not "%NVME_CONTROLLER%"=="NVME_OK" (
 	ECHO *************************************************************************************
 	ECHO This system Storage Controller is either not compatible or using proprietary drivers
+	ECHO This is a hard requirement - Please check device manager to verify if the 
+	ECHO storage controller is Microsoft NVM express Controller - You might be on IntelRST
+	ECHO However - if you are NOT running RAID then you need to change it in bios to AHCI
+	ECHO Changing it in bios means you also need to boot into safe mode 1 time after.
 	ECHO *************************************************************************************
   pause
-  goto :menu
+  goto menu
 )
-ECHO Microsoft Standard NVM Express Controller found active
+ECHO.
+ECHO 	Microsoft Standard NVM Express Controller found active
+ECHO.
 :drives
 ECHO Ensuring installed drives are using the Microsoft StorNVMe driver and not proprietary
 ::StorNVMe.sys bound to disk (locale-independent)
@@ -111,49 +116,80 @@ for /f "usebackq delims=" %%I in (`powershell -NoProfile -Command ^
   set "FOUNDSTORNVME=%%I"
 )
 if /I not "%FOUNDSTORNVME%"=="STORNVME_FOUND" (
+	ECHO. 
 	ECHO *****************************************************************************************
 	ECHO This system drives are not bound to Microsoft stornvme or are using proprietary drivers
-	ECHO These are dependencies of the new Microsoft NVMe driver for activation
+	ECHO These are some dependencies of the new Microsoft NVMe driver for activation
+	ECHO However - testing has found some drives and systems that dont have this pairing will 
+	ECHO still work with the new NVMe driver regardless of this - continuing
 	ECHO *****************************************************************************************
+	ECHO. 
   pause
-  goto :menu
+  goto bypassio
 )
-ECHO Disks found active with Microsoft StorNVMe
+ECHO.
+ECHO 	Disks found active with Microsoft StorNVMe
+ECHO.
 
-::BypassIO status (improved via FSCTL_MANAGE_BYPASS_IO)
+:bypassio
+::BypassIO status (not language dependent - fsutil returned language results)
 ECHO Checking for BypassIO in use - it is not yet compatible with the new NVMe driver
-for /f "usebackq delims=" %%I in (`
-powershell -NoProfile -Command ^
-  "$ErrorActionPreference='Stop';" ^
-  "Add-Type -Language CSharp @'
-  using System;
-  using System.Runtime.InteropServices;
-  public static class Bpio {
-    const uint FILE_FLAG_BACKUP_SEMANTICS=0x02000000, FILE_SHARE_READ=1, FILE_SHARE_WRITE=2, FILE_SHARE_DELETE=4, OPEN_EXISTING=3, GENERIC_READ=0x80000000;
-    const uint FSCTL_MANAGE_BYPASS_IO=0x00090448; // ntifs.h
-    [StructLayout(LayoutKind.Sequential)] struct FS_BPIO_INPUT{ public int Operation; public int InFlags; public ulong R1; public ulong R2; }
-    [StructLayout(LayoutKind.Sequential, CharSet=CharSet.Unicode)] struct FS_BPIO_OUTPUT{ public int Operation; public int OutFlags; public int Status; public int Reserved;
-      [MarshalAs(UnmanagedType.ByValTStr, SizeConst=32)] public string DriverName;
-      [MarshalAs(UnmanagedType.ByValTStr, SizeConst=256)] public string Reason; }
-    [DllImport(\"kernel32\", SetLastError=true, CharSet=CharSet.Unicode)]
-    static extern IntPtr CreateFile(string name,uint access,uint share,IntPtr sa,uint disp,uint flags,IntPtr tpl);
-    [DllImport(\"kernel32\", SetLastError=true)]
-    static extern bool DeviceIoControl(IntPtr h,uint code,ref FS_BPIO_INPUT inB,int inSz,out FS_BPIO_OUTPUT outB,int outSz,out uint ret,IntPtr ov);
-    [DllImport(\"kernel32\")] static extern bool CloseHandle(IntPtr h);
-    public static int Query(string root){
-      var h=CreateFile(@\"\\\\.\\\"+root.TrimEnd('\\'),GENERIC_READ,FILE_SHARE_READ|FILE_SHARE_WRITE|FILE_SHARE_DELETE,IntPtr.Zero,OPEN_EXISTING,FILE_FLAG_BACKUP_SEMANTICS,IntPtr.Zero);
-      if(h==IntPtr.Zero||h.ToInt64()==-1) return 2;
-      var input=new FS_BPIO_INPUT{Operation=3/*FS_BPIO_OP_QUERY*/,InFlags=0,R1=0,R2=0}; FS_BPIO_OUTPUT output; uint ret;
-      bool ok=DeviceIoControl(h,FSCTL_MANAGE_BYPASS_IO,ref input,Marshal.SizeOf<FS_BPIO_INPUT>(),out output,Marshal.SizeOf<FS_BPIO_OUTPUT>(),out ret,IntPtr.Zero);
-      CloseHandle(h); if(!ok) return 3;
-      const int FSBPIO_OUTFL_COMPATIBLE_STORAGE_DRIVER=0x00000008;
-      return ((output.OutFlags & FSBPIO_OUTFL_COMPATIBLE_STORAGE_DRIVER)!=0)? 0:1;
-    }
-  }
-'@; exit ([Bpio]::Query('%SystemDrive%'))"
-`) do set "BPIO_RC=%%I"
 
-if "%BPIO_RC%"=="0" (
+setlocal EnableExtensions EnableDelayedExpansion
+
+set KEY=HKLM\SYSTEM\CurrentControlSet\Services\storport\Parameters
+set VALUE=EnableBypassIO
+
+rem Query registry WITHOUT parsing localized text
+reg query "%KEY%" /v %VALUE% >nul 2>&1
+if errorlevel 1 (
+    echo BypassIO is NOT enabled - registry value not present
+    goto bypassiosystemdrive
+)
+
+for /f "tokens=3" %%A in (
+    'reg query "%KEY%" /v %VALUE% ^| findstr /R /C:"REG_DWORD"'
+) do set DATA=%%A
+
+if /i "%DATA%"=="0x1" (
+    echo BypassIO is ENABLED
+	goto bypassiostop
+) else (
+    echo BypassIO is NOT enabled
+	goto bypassiosystemdrive
+)
+
+:bypassiosystemdrive
+::DRIVE SUPPORT check
+ECHO
+setlocal EnableExtensions
+
+set DRIVE=C:
+
+rem Query BypassIO capability
+fsutil bypassio query %DRIVE% >nul 2>&1
+
+set ERR=%ERRORLEVEL%
+
+if %ERR%==0 (
+    echo Drive %DRIVE% SUPPORTS BypassIO.
+	goto bypassiostop
+) else if %ERR%==1 (
+    echo Drive %DRIVE% does NOT support BypassIO.
+	goto systemverifiedcompatible
+) else if %ERR%==5 (
+    echo Access denied.
+	goto menu
+) else (
+    echo Unknown result. Error code: %ERR%
+	pause
+	goto menu
+)
+
+endlocal
+
+:bypassioSTOP
+endlocal
 	ECHO *************************************************************************
 	ECHO This system supports BypassIO Support- DO NOT enable the new NVMe driver
   	ECHO *************************************************************************
@@ -162,6 +198,7 @@ if "%BPIO_RC%"=="0" (
 ) else (
   ECHO BypassIO-compatible storage not detected- continuing...
 )
+:systemverifiedcompatible
   	ECHO ************************************************************
 	ECHO Congratulations - all system requirements Verified.
 	ECHO The changes for enabling the new NVMe driver will now apply
@@ -216,12 +253,24 @@ if defined SRPF_BACKUP (
 )
 
 ECHO Enabling NVME storage features in registry
+::Feature Flag: 156965516  (Standalone_Future - Performance optimizations)
 reg add HKLM\SYSTEM\CurrentControlSet\Policies\Microsoft\FeatureManagement\Overrides /v 156965516 /t REG_DWORD /d 1 /f
+:: Feature Flag: 1853569164 UxAccOptimization 
 reg add HKLM\SYSTEM\CurrentControlSet\Policies\Microsoft\FeatureManagement\Overrides /v 1853569164 /t REG_DWORD /d 1 /f
+:: Feature Flag: 735209102  -NativeNVMeStackForGeClient
 reg add HKLM\SYSTEM\CurrentControlSet\Policies\Microsoft\FeatureManagement\Overrides /v 735209102 /t REG_DWORD /d 1 /f
+:: OptionalFeature Flag: 1176759950 (Microsoft Official Server 2025 key)
+reg add HKLM\SYSTEM\CurrentControlSet\Policies\Microsoft\FeatureManagement\Overrides /v 1176759950 /t REG_DWORD /d 1 /f
+
+::new workarounds
+reg add HKLM\SYSTEM\CurrentControlSet\Policies\Microsoft\FeatureManagement\Overrides /v 60786016 /t REG_DWORD /d 1 /f
+reg add HKLM\SYSTEM\CurrentControlSet\Policies\Microsoft\FeatureManagement\Overrides /v 48433719 /t REG_DWORD /d 1 /f
+
 ::safemode fallback
 ECHO Enabling SafeMode fallback registry entries
+::SafeBoot Minimal
 reg add "HKLM\SYSTEM\CurrentControlSet\Control\SafeBoot\Network\{75416E63-5912-4DFA-AE8F-3EFACCAFFB14}" /ve /d "Storage Disks" /f
+::SafeBoot Network
 reg add "HKLM\SYSTEM\CurrentControlSet\Control\SafeBoot\Minimal\{75416E63-5912-4DFA-AE8F-3EFACCAFFB14}" /ve /d "Storage Disks" /f
 ECHO. 
 	set /p q=A system restart is required for the changes, reboot? [Y/N]?
