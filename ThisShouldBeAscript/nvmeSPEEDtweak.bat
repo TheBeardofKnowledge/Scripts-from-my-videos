@@ -14,11 +14,11 @@ ECHO Running Admin shell
 ::@ECHO OFF
 color
 TITLE TBOK NVMe Windows Driver Enabler Release 04-07-2026
-Updated 04-10-2026
-setlocal EnableExtensions
+setlocal EnableExtensions EnableDelayedExpansion
 chcp 65001 >nul
 cls
 :menu
+ECHO TBOK NVMe Windows Driver Enabler Release 04-07-2026
 ::Disclaimer
 ECHO ******************************************
 ECHO  *PLEASE READ-Known compatibility issues*
@@ -119,12 +119,11 @@ if /I not "%FOUNDSTORNVME%"=="STORNVME_FOUND" (
 	ECHO. 
 	ECHO *****************************************************************************************
 	ECHO This system drives are not bound to Microsoft stornvme or are using proprietary drivers
-	ECHO These are some dependencies of the new Microsoft NVMe driver for activation
-	ECHO However - testing has found some drives and systems that dont have this pairing will 
-	ECHO still work with the new NVMe driver regardless of this - continuing
+	ECHO This is listed as a dependency of the new Microsoft NVMe driver for activation - However
+	ECHO testing has found some drives and systems that dont have this pairing will still work
+	ECHO with the new NVMe driver regardless of this - continuing
 	ECHO *****************************************************************************************
 	ECHO. 
-  pause
   goto bypassio
 )
 ECHO.
@@ -133,14 +132,12 @@ ECHO.
 
 :bypassio
 ::BypassIO status (not language dependent - fsutil returned language results)
-ECHO Checking for BypassIO in use - it is not yet compatible with the new NVMe driver
-
-setlocal EnableExtensions EnableDelayedExpansion
+ECHO Checking for BypassIO in use - it is not yet fully compatible with the new NVMe driver
 
 set KEY=HKLM\SYSTEM\CurrentControlSet\Services\storport\Parameters
 set VALUE=EnableBypassIO
 
-rem Query registry WITHOUT parsing localized text
+::Query registry WITHOUT parsing localized text
 reg query "%KEY%" /v %VALUE% >nul 2>&1
 if errorlevel 1 (
     echo BypassIO is NOT enabled - registry value not present
@@ -161,9 +158,7 @@ if /i "%DATA%"=="0x1" (
 
 :bypassiosystemdrive
 ::DRIVE SUPPORT check
-ECHO
-setlocal EnableExtensions
-
+ECHO System Drive Status Check
 set DRIVE=C:
 
 rem Query BypassIO capability
@@ -172,31 +167,28 @@ fsutil bypassio query %DRIVE% >nul 2>&1
 set ERR=%ERRORLEVEL%
 
 if %ERR%==0 (
-    echo Drive %DRIVE% SUPPORTS BypassIO.
+	echo 	Drive %DRIVE% SUPPORTS BypassIO.
 	goto bypassiostop
 ) else if %ERR%==1 (
-    echo Drive %DRIVE% does NOT support BypassIO.
+	echo 	Drive %DRIVE% does NOT support BypassIO.
 	goto systemverifiedcompatible
 ) else if %ERR%==5 (
-    echo Access denied.
+    echo 	Access denied.
 	goto menu
 ) else (
-    echo Unknown result. Error code: %ERR%
+    echo 	Unknown result - Error code: %ERR%
 	pause
 	goto menu
 )
 
-endlocal
-
 :bypassioSTOP
-endlocal
 	ECHO *************************************************************************
 	ECHO This system supports BypassIO Support- DO NOT enable the new NVMe driver
   	ECHO *************************************************************************
   pause
   goto :menu
 ) else (
-  ECHO BypassIO-compatible storage not detected- continuing...
+  ECHO 	BypassIO-compatible storage not detected- continuing...
 )
 :systemverifiedcompatible
   	ECHO ************************************************************
@@ -251,18 +243,23 @@ if defined SRPF_BACKUP (
 ) else (
     reg delete "%SRPF_KEY%" /v %SRPF_VAL% /f >nul 2>nul
 )
-
-ECHO Enabling NVME storage features in registry
-::Feature Flag: 156965516  (Standalone_Future - Performance optimizations)
+endlocal
+:registry
+ECHO 	Enabling NVME storage features in registry
+::Feature Flag 156965516  (Standalone_Future - Performance optimizations)
+ECHO 	Enabling Performance Optimizations
 reg add HKLM\SYSTEM\CurrentControlSet\Policies\Microsoft\FeatureManagement\Overrides /v 156965516 /t REG_DWORD /d 1 /f
-:: Feature Flag: 1853569164 UxAccOptimization 
+:: Feature Flag 1853569164 UxAccOptimization 
+ECHO 	Enabling UxAccOptimization
 reg add HKLM\SYSTEM\CurrentControlSet\Policies\Microsoft\FeatureManagement\Overrides /v 1853569164 /t REG_DWORD /d 1 /f
-:: Feature Flag: 735209102  -NativeNVMeStackForGeClient
+:: Feature Flag 735209102  -NativeNVMeStackForGeClient
+ECHO 	Enabling NVMe Stack for GeClient
 reg add HKLM\SYSTEM\CurrentControlSet\Policies\Microsoft\FeatureManagement\Overrides /v 735209102 /t REG_DWORD /d 1 /f
-:: OptionalFeature Flag: 1176759950 (Microsoft Official Server 2025 key)
+:: OptionalFeature Flag 1176759950 -Microsoft Official Server 2025 key
 reg add HKLM\SYSTEM\CurrentControlSet\Policies\Microsoft\FeatureManagement\Overrides /v 1176759950 /t REG_DWORD /d 1 /f
 
 ::new workarounds
+ECHO Enabling additional feature sets that Microsoft moved the feature enablement to
 reg add HKLM\SYSTEM\CurrentControlSet\Policies\Microsoft\FeatureManagement\Overrides /v 60786016 /t REG_DWORD /d 1 /f
 reg add HKLM\SYSTEM\CurrentControlSet\Policies\Microsoft\FeatureManagement\Overrides /v 48433719 /t REG_DWORD /d 1 /f
 
@@ -298,6 +295,8 @@ ECHO.
 reg add HKLM\SYSTEM\CurrentControlSet\Policies\Microsoft\FeatureManagement\Overrides /v 156965516 /t REG_DWORD /d 0 /f
 reg add HKLM\SYSTEM\CurrentControlSet\Policies\Microsoft\FeatureManagement\Overrides /v 1853569164 /t REG_DWORD /d 0 /f
 reg add HKLM\SYSTEM\CurrentControlSet\Policies\Microsoft\FeatureManagement\Overrides /v 735209102 /t REG_DWORD /d 0 /f
+reg add HKLM\SYSTEM\CurrentControlSet\Policies\Microsoft\FeatureManagement\Overrides /v 60786016 /t REG_DWORD /d 0 /f
+reg add HKLM\SYSTEM\CurrentControlSet\Policies\Microsoft\FeatureManagement\Overrides /v 48433719 /t REG_DWORD /d 0 /f
 goto reboot
 ::=========================================================================
 PAUSE
