@@ -1,4 +1,4 @@
-Have you ever watched a tech tips video with a bunch of steps and though... "that should just be a script".  I did, and now you can use them as well.
+Have you ever watched a tech tips video with a bunch of steps and thoughto to yourself... "I'm not doing all that, this should just be a script".  So, I did, and now you can use them as well.
 
  Please subscribe to my YouTube channel, I would greatly appreciate it!
  https://www.youtube.com/@thebeardofknowledge
