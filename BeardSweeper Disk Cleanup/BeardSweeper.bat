@@ -47,8 +47,12 @@ cls
 	TIMEOUT 5
 	ECHO.
 	ECHO Initializing Garbage Disposal Procedure...
+	ECHO.
+	ECHO Starting cleanup of orphaned Windows App installers
+c:\windows\system32\rundll32.exe AppxDeploymentClient.dll,AppxCleanupOrphanPackages
+
 :hibernation
-ECHO Setting Hibernation based on PC chassis type
+ECHO Setting Hibernation aka "Fast Startup" based on PC chassis type
 ::	Reasons to leave Hibernation/Fast Startup/Hybrid Shutdown disabled on desktops...
 ::	1. Most modern PC's come with an SSD or m.2 NVME drive and fast startup is not required.
 ::	2. Hybrid shutdown/hibernation/fast startup often causes Windows Updates to NOT install properly.
@@ -66,10 +70,17 @@ ECHO Setting Hibernation based on PC chassis type
  	" { '3', '4', '5', '6', '7', '13', '15', '16', '24' -Eq $_ } { 'Desktop' };"^
  	" { '8', '9', '10', '11', '12', '14', '18', '21', '30', '31', '32' -Eq $_ } { 'Laptop' };"^
 	 " default { '' } } } }" 2^>NUL') Do Set Type=%%G
-	If Not Defined Type GoTo END
+	If Not Defined Type GoTo hibernateask
 	Set Type
 		if /i "%Type%"=="Laptop" goto laptop
 		if /i "%Type%"=="Desktop" goto desktop
+:hibernateask
+	ECHO Could not autodetect device type -  is this a Laptop "L" or Desktop "D"? [L/D] Default is D for Desktop to disable fast startup
+	CHOICE /C LD /N /T 10 /D D
+
+	IF ERRORLEVEL 2 GOTO desktop
+	IF ERRORLEVEL 1 GOTO laptop
+
 :laptop
 	ECHO Laptop detected - enabled hibernation mode
 	powercfg -h on
@@ -102,7 +113,7 @@ ECHO Setting Hibernation based on PC chassis type
 	rmdir /S /Q "%systemroot%\system32\catroot2" >nul 2>&1
 ::commented out the below line because rolling back updates is needed, and it's usually only 1-2Gb.  
 ::If you don't care about rolling back updates (DANGER Will Robinson), remove the :: in front of the next line.	
-	::rmdir /S /Q "%systemroot%\Installer\$PatchCache$"  >nul 2>&1
+::rmdir /S /Q "%systemroot%\Installer\$PatchCache$"  >nul 2>&1
 	DEL /S /Q /F "%systemroot%\ServiceProfiles\NetworkService\AppData\Local\Microsoft\Windows\DeliveryOptimization\Logs\*.*" >nul 2>&1
 	ECHO Cleanup Complete - Starting Windows Update Services
 	net start bits >nul 2>&1
@@ -110,7 +121,7 @@ ECHO Setting Hibernation based on PC chassis type
 	net start appidsvc >nul 2>&1
 	net start cryptsvc >nul 2>&1
 	DISM /Online /Cleanup-Image /StartComponentCleanup >nul 2>&1
-::for extra aggressive cleanup -uncomment the next line by removing the :: but keep in mind you won't be able to revert this cleanup
+::for extra aggressive Windows Image cleanup uncomment the next line by removing the :: but keep in mind you won't be able to revert this cleanup
 	::DISM /Online /Cleanup-Image /StartComponentCleanup /ResetBase
 
 :WindowsTempFilesCleanup
@@ -220,7 +231,6 @@ ECHO Cleaning OneDrive Cache for all users - OneDrive will be closed to prevent 
     ECHO Cleaning Cache files for all users
     For /d %%u in ("%systemdrive%\users\*") do (
         SET "oneDriveDataDir=%%u\AppData\Local\Microsoft\OneDrive"
-
         del /q /s /f "!oneDriveDataDir!\logs\*.*" >nul 2>&1
         del /q /s /f "!oneDriveDataDir!\temp\*.*" >nul 2>&1
         del /q /s /f "!oneDriveDataDir!\update\*.*" >nul 2>&1
@@ -241,11 +251,11 @@ ECHO Cleaning OneDrive Cache for all users - OneDrive will be closed to prevent 
 	Echo DONE - Remember to reopen OneDrive to resume file sync.
 
 :WindowsSearchreset
-	ECHO Stopping the Search Service to clear and reset
+	ECHO Stopping the Search Service to clear and reset it
 	sc config wsearch start=disabled >nul 2>&1
 	sc stop wsearch >nul 2>&1
 	timeout /t 5 /nobreak >nul 2>&1
-	::flagging the search database as dirty so it can reindex
+	::flagging the search database as dirty so it can perform a reindex on next startup
 	REG ADD "HKLM\SOFTWARE\Microsoft\Windows Search" /v SetupCompletedSuccessfully /t REG_DWORD /d 0 /f >nul 2>&1
 	::clearing out the existing search database
 	DEL /S /Q /F /A "%systemdrive%\ProgramData\Microsoft\Search\Data\Applications\Windows\*.*"  >nul 2>&1
@@ -267,7 +277,6 @@ ECHO Cleaning OneDrive Cache for all users - OneDrive will be closed to prevent 
 	%systemroot%\System32\rundll32.exe InetCpl.cpl, ClearMyTracksByProcess 4351 >nul 2>&1
 	:: Loop through all user profiles in C:\Users
 		for /d %%u in ("C:\Users\*") do (
-		ECHO Processing %%u...
     :: Delete IE Temporary Internet Files (cache)
 		del /s /q "%%u\AppData\Local\Microsoft\Windows\INetCache\*.*" 2>nul
 		del /s /q "%%u\AppData\Local\Microsoft\Windows\Temporary Internet Files\*.*" 2>nul
@@ -446,6 +455,9 @@ ECHO Running CleanMgr and Waiting for Disk Cleanup to complete, this takes a whi
 	START /wait CLEANMGR /sagerun:69 >nul 2>&1
 ECHO Be patient, this process can take a while depending on how much temporary Crap has accummulated in your system...
 	START /wait CLEANMGR /verylowdisk /autoclean	>nul 2>&1
+::found instances where cleanmgr "disk cleanup" hid behind a window and prevented the script from continuing
+::this will bring the window to the front
+powershell.exe -c Set-ForegroundWindow (Get-Process PowerShell).cleanmgr
 
 :RestorePointsCleaup
 	ECHO	//////////////////////////////////////////////////////////////////////////////////////
