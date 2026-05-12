@@ -457,7 +457,7 @@ ECHO Be patient, this process can take a while depending on how much temporary C
 	START /wait CLEANMGR /verylowdisk /autoclean	>nul 2>&1
 ::found instances where cleanmgr "disk cleanup" hid behind a window and prevented the script from continuing
 ::this will bring the window to the front
-powershell.exe -c Set-ForegroundWindow (Get-Process PowerShell).cleanmgr
+::powershell.exe -c Set-ForegroundWindow (Get-Process PowerShell).cleanmgr
 
 :RestorePointsCleaup
 	ECHO	//////////////////////////////////////////////////////////////////////////////////////
