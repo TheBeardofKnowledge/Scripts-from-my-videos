@@ -169,8 +169,8 @@ ECHO Setting Hibernation aka "Fast Startup" based on PC chassis type
 	DEL /S /Q /F "%%u\AppData\Roaming\Microsoft\Excel\*.*" >nul 2>&1
 	DEL /S /Q /F "%%u\AppData\Local\Packages\Microsoft.ScreenSketch_8wekyb3d8bbwe\TempState\Recordings\*.*" >nul 2>&1
 	DEL /S /Q /F "%%u\AppData\Local\Packages\Microsoft.ScreenSketch_8wekyb3d8bbwe\TempState\Snips\*.*" >nul 2>&1
-	DEL /S /Q /F "%%u\AppData\Roaming\Microsoft\OneNote\16.0\cache\*.*" >nul 2>&
-	DEL /S /Q /F "%%u\AppData\Roaming\Microsoft\Windows\WebCache\*.*" >nul 2>&
+	DEL /S /Q /F "%%u\AppData\Roaming\Microsoft\OneNote\16.0\cache\*.*" >nul 2>&1
+	DEL /S /Q /F "%%u\AppData\Roaming\Microsoft\Windows\WebCache\*.*" >nul 2>&1
 	)
 :TheRecycleBinIsNotAfolder
 	ECHO Emptying the recycle bin... you weren't ACTUALLY storing stuff in there, were you? I hope not.
